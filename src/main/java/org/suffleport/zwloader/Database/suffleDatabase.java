@@ -55,9 +55,8 @@ public class CreateDatabase {
         st.execute("""
             DO $$
             BEGIN 
-                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'direction_t')
-                   THEN
-                        CREATE TYPE direction_t AS ENUM ('IN','OUT');
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'direction_t') THEN
+                    CREATE TYPE direction_t AS ENUM ('IN','OUT');
                 END IF;
             END$$;
         """);
@@ -71,6 +70,10 @@ public class CreateDatabase {
         """);
     }
 
+
+    //  Таблица positions (должности)
+
+
     private void createPositionsTable(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS positions (
@@ -82,10 +85,35 @@ public class CreateDatabase {
         """);
 
         st.execute("""
+            CREATE INDEX IF NOT EXISTS idx_positions_name_lower
+                ON positions (lower(position_name))
+        """);
+    }
+
+
+    //  Таблица personnel (персонал)
+
+
+    private void createPersonnelTable(Statement st) throws SQLException {
+        st.execute("""
+            CREATE TABLE IF NOT EXISTS personnel (
+                person_id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                last_name          TEXT,
+                first_name         TEXT,
+                middle_name        TEXT,
+                full_name          TEXT,
+                date_of_birth      DATE,
+                position_id        UUID REFERENCES positions(position_id),
+                phone              TEXT,
+                compreface_subject TEXT,
+                created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+            )
+        """);
+
+        st.execute("""
             CREATE INDEX IF NOT EXISTS idx_personnel_name_lower
                 ON personnel (lower(last_name), lower(first_name))
         """);
-
 
         st.execute("""
             CREATE INDEX IF NOT EXISTS idx_personnel_full_name_lower
@@ -94,10 +122,13 @@ public class CreateDatabase {
     }
 
 
+    //  Таблица cards (карты/пропуска)
+
+
     private void createCardsTable(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS cards (
-                uid TEXT PRIMARY KEY NOT NULL,
+                uid TEXT PRIMARY KEY,
                 person_id UUID NOT NULL REFERENCES personnel(person_id) ON DELETE CASCADE,
                 is_active BOOLEAN NOT NULL DEFAULT TRUE,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -110,21 +141,30 @@ public class CreateDatabase {
         """);
     }
 
+
+    //  Таблица faces (лица / CompreFace subjects)
+
+
     private void createFacesTable(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS faces (
                 face_id BIGSERIAL PRIMARY KEY,
                 face_name TEXT NOT NULL,
-                person_id UUID NOT NULL REFERNCES personnel(person_id) ON DELETE CASCADE,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                person_id UUID NOT NULL REFERENCES personnel(person_id) ON DELETE CASCADE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
                 UNIQUE (face_name)
             )
         """);
+
         st.execute("""
             CREATE INDEX IF NOT EXISTS idx_faces_person_id
                 ON faces(person_id)
         """);
     }
+
+
+    //  Таблица devices (устройства)
+
 
     private void createDevicesTable(Statement st) throws SQLException {
         st.execute("""
@@ -135,9 +175,13 @@ public class CreateDatabase {
                 created_at TIMESTAMPTZ NOT NULL DEFAULT now()
             )
         """);
-
     }
-    private void createCamerasTable(Statement st) throws Exception {
+
+
+    //  Таблица cameras (RTSP-потоки)
+
+
+    private void createCamerasTable(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS cameras (
                 camera_id   TEXT PRIMARY KEY,
@@ -149,19 +193,24 @@ public class CreateDatabase {
             )
         """);
     }
-    private void createGuestsTables(Statement st) throws Exception {
+
+
+    //  Таблицы guests и guest_visits (гости)
+
+
+    private void createGuestsTables(Statement st) throws SQLException {
         // Карточка гостя (кто он вообще)
         st.execute("""
             CREATE TABLE IF NOT EXISTS guests (
                 guest_id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                last_name     TEXT,             -- фамилия
-                first_name    TEXT,             -- имя
-                middle_name   TEXT,             -- отчество
-                full_name     TEXT,             -- полное ФИО
-                phone         TEXT,             -- контактный телефон
-                company       TEXT,             -- компания гостя (ООО "Ромашка")
-                document      TEXT,             -- документ (паспорт, пропуск) - на будущее
-                notes         TEXT,             -- примечания
+                last_name     TEXT,
+                first_name    TEXT,
+                middle_name   TEXT,
+                full_name     TEXT,
+                phone         TEXT,
+                company       TEXT,
+                document      TEXT,
+                notes         TEXT,
                 created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
             )
         """);
@@ -171,16 +220,21 @@ public class CreateDatabase {
             CREATE TABLE IF NOT EXISTS guest_visits (
                 visit_id       BIGSERIAL PRIMARY KEY,
                 guest_id       UUID NOT NULL REFERENCES guests(guest_id) ON DELETE CASCADE,
-                host_person_id UUID NOT NULL REFERENCES personnel(person_id), -- кто сопровождает (сотрудник)
-                planned_from   TIMESTAMPTZ,          -- когда ожидается приход
-                planned_to     TIMESTAMPTZ,          -- до какого времени может находиться
-                reason         TEXT,                 -- причина визита (переговоры, поставка и т.п.)
-                status         TEXT,                 -- 'PLANNED', 'IN_PROGRESS', 'FINISHED', 'CANCELLED' (на будущее)
+                host_person_id UUID NOT NULL REFERENCES personnel(person_id),
+                planned_from   TIMESTAMPTZ,
+                planned_to     TIMESTAMPTZ,
+                reason         TEXT,
+                status         TEXT,
                 created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
             )
         """);
     }
-    private void createEventsTable(Statement st) throws Exception {
+
+
+    //  Таблица events (журнал проходов)
+
+
+    private void createEventsTable(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS events (
                 event_id     BIGSERIAL PRIMARY KEY,
@@ -209,7 +263,12 @@ public class CreateDatabase {
             CREATE INDEX IF NOT EXISTS idx_events_device_id  ON events(device_id)
         """);
     }
-    private void createRolesAndUsersTables(Statement st) throws Exception {
+
+
+    //  Роли и пользователи веб-морды
+
+
+    private void createRolesAndUsersTables(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS roles (
                 role_id   SERIAL PRIMARY KEY,
@@ -228,44 +287,42 @@ public class CreateDatabase {
             )
         """);
     }
-    // ================================
-//  Таблица нарушений техники безопасности
-// ================================
 
-    private void createSafetyIncidentsTable(Statement st) throws Exception {
-        st.execute("""
-        CREATE TABLE IF NOT EXISTS safety_incidents (
-            incident_id     BIGSERIAL PRIMARY KEY,          -- ID события по ТБ
-            person_id       UUID REFERENCES personnel(person_id),   -- кто нарушил (если известен)
-            guest_id        UUID REFERENCES guests(guest_id),       -- если нарушил гость (опционально)
-            device_id       TEXT REFERENCES devices(device_id),     -- устройство/камера, где заметили
-            event_time      TIMESTAMPTZ NOT NULL DEFAULT now(),     -- когда произошло (или зафиксировано)
-            type            TEXT NOT NULL,                          -- тип нарушения: 'no-helmet', 'smoke', 'fire', ...
-            severity        TEXT,                                   -- серьёзность: 'LOW', 'MEDIUM', 'HIGH'
-            description     TEXT,                                   -- описание (свободный текст)
-            image_url       TEXT,                                   -- ссылка на кадр/фото (если есть)
-            status          TEXT NOT NULL DEFAULT 'NEW',            -- 'NEW', 'IN_PROGRESS', 'RESOLVED', 'IGNORED'
-            handled_by      UUID REFERENCES personnel(person_id),   -- кто обработал (специалист по ТБ)
-            handled_at      TIMESTAMPTZ,                            -- когда обработано
-            created_at      TIMESTAMPTZ NOT NULL DEFAULT now()      -- когда попало в систему
-        )
-    """);
 
-        // Индексы для быстрых отчётов
+    //  Таблица нарушений техники безопасности
+
+    private void createSafetyIncidentsTable(Statement st) throws SQLException {
         st.execute("""
-        CREATE INDEX IF NOT EXISTS idx_safety_incidents_time
-            ON safety_incidents(event_time)
-    """);
+            CREATE TABLE IF NOT EXISTS safety_incidents (
+                incident_id     BIGSERIAL PRIMARY KEY,
+                person_id       UUID REFERENCES personnel(person_id),
+                guest_id        UUID REFERENCES guests(guest_id),
+                device_id       TEXT REFERENCES devices(device_id),
+                event_time      TIMESTAMPTZ NOT NULL DEFAULT now(),
+                type            TEXT NOT NULL,
+                severity        TEXT,
+                description     TEXT,
+                image_url       TEXT,
+                status          TEXT NOT NULL DEFAULT 'NEW',
+                handled_by      UUID REFERENCES personnel(person_id),
+                handled_at      TIMESTAMPTZ,
+                created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+            )
+        """);
 
         st.execute("""
-        CREATE INDEX IF NOT EXISTS idx_safety_incidents_person
-            ON safety_incidents(person_id)
-    """);
+            CREATE INDEX IF NOT EXISTS idx_safety_incidents_time
+                ON safety_incidents(event_time)
+        """);
 
         st.execute("""
-        CREATE INDEX IF NOT EXISTS idx_safety_incidents_type
-            ON safety_incidents(type)
-    """);
+            CREATE INDEX IF NOT EXISTS idx_safety_incidents_person
+                ON safety_incidents(person_id)
+        """);
+
+        st.execute("""
+            CREATE INDEX IF NOT EXISTS idx_safety_incidents_type
+                ON safety_incidents(type)
+        """);
     }
-
 }
