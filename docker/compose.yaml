@@ -1,0 +1,280 @@
+networks:
+  postgresql_net:
+    driver: bridge
+  custom_net:
+    external: true
+
+
+volumes:
+  postgres-data:
+  pgdata:
+
+
+services:
+  compreface-postgres-db:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: compreface-postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${postgres_username}
+      POSTGRES_PASSWORD: ${postgres_password}
+      POSTGRES_DB: ${postgres_db}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${postgres_username} -d ${postgres_db} -h 127.0.0.1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - custom_net
+
+
+
+
+  compreface-core:
+    image: ${registry}compreface-core:${CORE_VERSION}
+    container_name: compreface-core
+    restart: always
+    environment:
+      ML_PORT: 3000
+      IMG_LENGTH_LIMIT: ${max_detect_size:-640}
+      UWSGI_PROCESSES: ${uwsgi_processes:-4}
+      UWSGI_THREADS: ${uwsgi_threads:-1}
+    healthcheck:
+      test: ["CMD-SHELL","curl --fail http://localhost:3000/healthcheck || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - custom_net
+
+
+
+  compreface-api:
+    image: ${registry}compreface-api:${API_VERSION}
+    container_name: compreface-api
+    restart: always
+    environment:
+      POSTGRES_USER: ${postgres_username}
+      POSTGRES_PASSWORD: ${postgres_password}
+      POSTGRES_URL: jdbc:postgresql://${postgres_domain}:${postgres_port}/${postgres_db}
+      SPRING_PROFILES_ACTIVE: dev
+      API_JAVA_OPTS: ${compreface_api_java_options}
+      SAVE_IMAGES_TO_DB: ${save_images_to_db}
+      MAX_FILE_SIZE: ${max_file_size}B
+      MAX_REQUEST_SIZE: ${max_request_size}B
+      CONNECTION_TIMEOUT: ${connection_timeout:-10000}
+      READ_TIMEOUT: ${read_timeout:-60000}
+      CF_KEY: ${CF_KEY}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: ${MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS}
+      MANAGEMENT_SECURITY_ENABLED: ${MANAGEMENT_SECURITY_ENABLED}
+    depends_on:
+      compreface-postgres-db:
+        condition: service_healthy
+    networks:
+      - custom_net
+
+
+
+  compreface-admin:
+    image: ${registry}compreface-admin:${ADMIN_VERSION}
+    container_name: compreface-admin
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${postgres_domain}:${postgres_port}/${postgres_db}
+      SPRING_DATASOURCE_USERNAME: ${postgres_username}
+      SPRING_DATASOURCE_PASSWORD: ${postgres_password}
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+      POSTGRES_USER: ${postgres_username}
+      POSTGRES_PASSWORD: ${postgres_password}
+      POSTGRES_URL: jdbc:postgresql://${postgres_domain}:${postgres_port}/${postgres_db}
+      FRS_API_KEY: ${CF_KEY}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: ${MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS}
+      MANAGEMENT_SECURITY_ENABLED: ${MANAGEMENT_SECURITY_ENABLED}
+    depends_on:
+      compreface-postgres-db:
+        condition: service_healthy
+      compreface-api:
+        condition: service_started
+    networks:
+      - custom_net
+
+
+
+  compreface-fe:
+    image: ${registry}compreface-fe:${FE_VERSION}
+    container_name: compreface-ui
+    restart: always
+    ports:
+      - "${FE_PORT:-8000}:80"
+    environment:
+      CLIENT_MAX_BODY_SIZE: ${max_request_size}
+      PROXY_READ_TIMEOUT: ${read_timeout:-60000}ms
+      PROXY_CONNECT_TIMEOUT: ${connection_timeout:-10000}ms
+      FRS_API_KEY: ${CF_KEY}
+    depends_on:
+      compreface-admin:
+        condition: service_started
+      compreface-api:
+        condition: service_started
+    networks:
+      - custom_net
+
+
+
+  double-take:
+    container_name: double-take
+    image: skrashevich/double-take:latest
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Moscow
+    volumes:
+      - ./double-take:/.storage
+    ports:
+      - 3002:3000
+    depends_on:
+       mosquitto:
+         condition: service_started
+       frigate:
+        condition: service_started
+       compreface-api:
+         condition: service_started
+    networks:
+      - custom_net
+
+
+
+
+  frigate:
+    container_name: frigate
+    image: ghcr.io/blakeblackshear/frigate:stable
+    restart: unless-stopped
+    shm_size: "256mb"
+    privileged: true
+    ports:
+      - "5001:5000"
+      - "8554:8554"
+      - "8555:8555/tcp"
+      - "8555:8555/udp"
+      - "1984:1984"
+    devices:
+      - /dev/video0:/dev/video0
+    volumes:
+      - ./frigate/config:/config
+      - ./frigate/media:/media
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - custom_net
+
+
+
+
+
+  homeassistant:
+     container_name: homeassistant
+     image: "ghcr.io/home-assistant/home-assistant:stable"
+     volumes:
+       - ./HOME_ASSISTANCE:/config
+       - /etc/localtime:/etc/localtime:ro
+       - /run/dbus:/run/dbus:ro
+     restart: unless-stopped
+     privileged: true
+     network_mode: host
+
+
+  mosquitto:
+     image: eclipse-mosquitto:2
+     container_name: mosquitto
+     restart: unless-stopped
+     ports:
+       - "1883:1883"
+     volumes:
+       - ./frigate/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+     networks:
+       - postgresql_net
+
+
+
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: gotenberg
+    ports:
+      - "3001:3000"
+    environment:
+      TZ: ${TZ:-Europe/Helsinki}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    networks:
+      - custom_net
+
+
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    environment:
+      - DOZZLE_MODE=swarm
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 1234:8080
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: shuffle_backend
+    depends_on:
+      - db
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/shuffle_db
+      DB_USER: shuffle_app
+      DB_PASSWORD: change_me
+      APP_PORT: 8081
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: shuffle_frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+

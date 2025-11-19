@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Доступ</title>
+  <link rel="stylesheet" href="../dist/assets/styles.css" />
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="page-wrapper flex items-center justify-between mb-4">
+    <h1 class="text-xl font-semibold">Панель доступа</h1>
+    <nav class="phone:nav desktop:nav">
+      <a href="#personnel" class="text-brand hover:underline">Сотрудники</a>
+      <a href="#cards" class="text-brand hover:underline">Карты</a>
+      <a href="#events" class="text-brand hover:underline">События</a>
+      <a href="#face" class="text-brand hover:underline">Face</a>
+    </nav>
+  </header>
+
+  <main class="page-wrapper space-y-8">
+    <section id="personnel" class="desktop:card phone:card">
+      <h2 class="text-lg font-medium mb-2">Сотрудники</h2>
+      <table class="phone:table desktop:table">
+        <thead><tr class="text-left"><th>ID</th><th>ФИО</th><th>Телефон</th></tr></thead>
+        <tbody id="personnel-table-body"></tbody>
+      </table>
+    </section>
+
+    <section id="cards" class="desktop:card phone:card">
+      <h2 class="text-lg font-medium mb-2">Регистрация карты</h2>
+      <form id="card-reg-form" class="flex flex-col gap-2 max-w-sm">
+        <input name="uid" class="border px-3 py-2 rounded" placeholder="UID карты" />
+        <input name="fullName" class="border px-3 py-2 rounded" placeholder="Полное ФИО" />
+        <button class="btn" type="submit">Привязать</button>
+      </form>
+    </section>
+
+    <section id="nfc" class="desktop:card phone:card">
+      <h2 class="text-lg font-medium mb-2">NFC Toggle</h2>
+      <div class="flex flex-col gap-2 max-w-sm">
+        <input id="nfc-uid" class="border px-3 py-2 rounded" placeholder="UID" />
+        <input id="nfc-device" class="border px-3 py-2 rounded" placeholder="Device" />
+        <button id="nfc-toggle-btn" class="btn" type="button">Отметить проход (NFC)</button>
+      </div>
+    </section>
+
+    <section id="face" class="desktop:card phone:card">
+      <h2 class="text-lg font-medium mb-2">Face Toggle</h2>
+      <div class="flex flex-col gap-2 max-w-sm">
+        <input id="face-name" class="border px-3 py-2 rounded" placeholder="Face Name" />
+        <input id="face-device" class="border px-3 py-2 rounded" placeholder="Device" />
+        <button id="face-toggle-btn" class="btn" type="button">Отметить проход (Face)</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/ui.js"></script>
+  <script type="module">import { bootstrap } from './js/ui.js'; bootstrap();</script>
+</body>
+</html>
+

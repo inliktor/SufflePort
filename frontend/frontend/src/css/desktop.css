@@ -1,0 +1,5 @@
+/* Стили для десктопа (desktop) */
+.desktop\:nav { @apply flex flex-row gap-4 text-base; }
+.desktop\:card { @apply p-6 rounded-xl shadow-md bg-white; }
+.desktop\:table { @apply w-full text-sm; }
+

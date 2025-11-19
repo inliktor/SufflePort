@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Импорт специализированных слоёв */
+@import "./phone.css";
+@import "./desktop.css";
+
+/* Общие компоненты */
+.btn { @apply inline-flex items-center gap-2 px-4 py-2 rounded bg-brand text-white hover:bg-brandAccent transition; }
+.badge { @apply px-2 py-1 text-xs rounded bg-gray-200; }
+.page-wrapper { @apply max-w-6xl mx-auto px-4 py-4; }
+
