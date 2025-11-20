@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "tailwindcss -i src/css/input.css -o dist/assets/styles.css --watch",
-    "build": "tailwindcss -i src/css/input.css -o dist/assets/styles.css --minify && node scripts/copy-to-backend.js"
+    "dev": "npx tailwindcss -i src/css/input.css -o dist/assets/styles.css --watch",
+    "build": "npx tailwindcss -i src/css/input.css -o dist/assets/styles.css --minify"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.14",
@@ -12,4 +12,3 @@
     "postcss": "^8.4.31"
   }
 }
-

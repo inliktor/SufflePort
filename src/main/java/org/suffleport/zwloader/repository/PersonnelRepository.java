@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
+import java.time.OffsetDateTime;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository // не обязательно: Spring распознает сам, но можно добавить для читабельности
 public interface PersonnelRepository extends JpaRepository<Personnel, UUID> {
@@ -32,14 +35,10 @@ public interface PersonnelRepository extends JpaRepository<Personnel, UUID> {
     // Всех сотрудников определённой должности — отсортировать по фамилии по возрастанию
 
 
-    List<Personnel> findByCreatedAtAfter(LocalDateTime date);
+    List<Personnel> findByCreatedAtAfter(OffsetDateTime date);
 
     List<Personnel> findByCreatedAtBetween(OffsetDateTime start, OffsetDateTime end);
 
     Page<Personnel> findByLastName(String lastName, Pageable pageable);
-
-
-
-
 
 }

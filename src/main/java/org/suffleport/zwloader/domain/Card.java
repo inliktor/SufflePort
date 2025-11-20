@@ -5,6 +5,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -33,9 +39,10 @@ public class Card {
     public Card() {
     }
 
-    public Card(String uid, UUID personId) {
+    // Удобный конструктор при необходимости
+    public Card(String uid, Personnel person) {
         this.uid = uid;
-        this.personId = personId;
+        this.person = person;
         this.active = true; // по умолчанию карта активна
     }
 }

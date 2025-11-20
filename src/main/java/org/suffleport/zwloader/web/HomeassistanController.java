@@ -10,6 +10,7 @@ import org.suffleport.zwloader.domain.Source;
 import org.suffleport.zwloader.service.CardService;
 import org.suffleport.zwloader.service.EventService;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -69,7 +70,11 @@ public class HomeassistanController {
     public Map<String, Object> registerCard(@RequestParam("uid") String uid,
                                             @RequestParam(value = "name", required = false) String fullName) {
         var res = cardService.registerCardByName(uid, fullName);
-        return Map.of("status", res.status(), "person_name", res.personName());
+        Map<String,Object> out = new LinkedHashMap<>();
+        out.put("status", res.status());
+        out.put("person_name", res.personName() != null ? res.personName() : "");
+        out.put("uid", uid);
+        return out;
     }
 
     /** send_scanned_card: скан без имени в режиме регистрации */
@@ -79,11 +84,11 @@ public class HomeassistanController {
         var res = (fullName == null || fullName.isBlank())
                 ? cardService.analyzeScanStatus(uid)
                 : cardService.registerCardByName(uid, fullName);
-        return Map.of(
-                "status", res.status(),
-                "person_name", res.personName(),
-                "uid", uid
-        );
+        Map<String,Object> out = new LinkedHashMap<>();
+        out.put("status", res.status());
+        out.put("person_name", res.personName() != null ? res.personName() : "");
+        out.put("uid", uid);
+        return out;
     }
 
     /** scan_guest_qr: простой парс JSON payload (здесь stub) */

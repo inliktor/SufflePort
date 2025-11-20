@@ -2,37 +2,48 @@ package org.suffleport.zwloader.Database;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.springframework.beans.factory.annotation.Value;
 
 
 /**
  *  Component создаёт bean со scope singleton — один объект на ApplicationContext (SINGLTON) используем чтобы подключитьяс к бд
  */
 @Component
+@ConditionalOnProperty(prefix = "app.db.init", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class CreateDatabase {
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
-    // по документации spring сам подставит сюда DataSource из настроек spring.datasource
+    @Value("${app.db.init.enabled:false}")
+    private boolean initEnabled;
+
+    // создавать ли enum-типы (требует CREATE TYPE)
+    @Value("${app.db.init.createTypes:false}")
+    private boolean createTypesEnabled;
+
+    // использовать ли DEFAULT gen_random_uuid() (требует расширение pgcrypto)
+    @Value("${app.db.init.useUuidDefault:false}")
+    private boolean useUuidDefault;
+
     public CreateDatabase(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    /**
-     * Метод @PostConstruct вызывается автоматически после создания бина.
-     * Здесь мы инициализируем схему БД.
-     */
     @PostConstruct
     public void init() {
+        if (!initEnabled) return;
         System.out.println("Колдуем над бд");
 
         try ( Connection connect = dataSource.getConnection();
               Statement st = connect.createStatement()) {
 
-
-            createTypes(st);
+            if (createTypesEnabled) {
+                createTypes(st);
+            }
             createPositionsTable(st);
             createPersonnelTable(st);
             createCardsTable(st);
@@ -43,13 +54,13 @@ public class CreateDatabase {
             createRolesAndUsersTables(st);
 //            createSafetyIncidentsTable(st);
 
-
             System.out.println("Инициализация бд прошла успешно!");
         } catch (Exception e) {
             System.out.println("Ошибка");
             e.printStackTrace();
         }
     }
+
     private void createTypes(Statement st) throws SQLException {
         st.execute("""
             DO $$
@@ -69,19 +80,19 @@ public class CreateDatabase {
         """);
     }
 
-
-    //  Таблица positions (должности)
-
+    private String uuidDefaultExpr() {
+        return useUuidDefault ? " DEFAULT gen_random_uuid()" : "";
+    }
 
     private void createPositionsTable(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS positions (
-                position_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                position_id UUID PRIMARY KEY%s,
                 position_name TEXT NOT NULL,
                 access_level  INTEGER,
                 created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
             )
-        """);
+        """.formatted(uuidDefaultExpr()));
 
         st.execute("""
             CREATE INDEX IF NOT EXISTS idx_positions_name_lower
@@ -89,14 +100,10 @@ public class CreateDatabase {
         """);
     }
 
-
-    //  Таблица personnel (персонал)
-
-
     private void createPersonnelTable(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS personnel (
-                person_id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                person_id          UUID PRIMARY KEY%s,
                 last_name          TEXT,
                 first_name         TEXT,
                 middle_name        TEXT,
@@ -107,7 +114,7 @@ public class CreateDatabase {
                 compreface_subject TEXT,
                 created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
             )
-        """);
+        """.formatted(uuidDefaultExpr()));
 
         st.execute("""
             CREATE INDEX IF NOT EXISTS idx_personnel_name_lower
@@ -119,10 +126,6 @@ public class CreateDatabase {
                 ON personnel (lower(full_name))
         """);
     }
-
-
-    //  Таблица cards (карты/пропуска)
-
 
     private void createCardsTable(Statement st) throws SQLException {
         st.execute("""
@@ -140,11 +143,6 @@ public class CreateDatabase {
         """);
     }
 
-
-
-    //  Таблица devices (устройства)
-
-
     private void createDevicesTable(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS devices(
@@ -155,10 +153,6 @@ public class CreateDatabase {
             )
         """);
     }
-
-
-    //  Таблица cameras (RTSP-потоки)
-
 
     private void createCamerasTable(Statement st) throws SQLException {
         st.execute("""
@@ -173,15 +167,10 @@ public class CreateDatabase {
         """);
     }
 
-
-    //  Таблицы guests и guest_visits (гости)
-
-
     private void createGuestsTables(Statement st) throws SQLException {
-        // Карточка гостя (кто он вообще)
         st.execute("""
             CREATE TABLE IF NOT EXISTS guests (
-                guest_id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                guest_id      UUID PRIMARY KEY%s,
                 last_name     TEXT,
                 first_name    TEXT,
                 middle_name   TEXT,
@@ -192,9 +181,8 @@ public class CreateDatabase {
                 notes         TEXT,
                 created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
             )
-        """);
+        """.formatted(uuidDefaultExpr()));
 
-        // Конкретные визиты гостей
         st.execute("""
             CREATE TABLE IF NOT EXISTS guest_visits (
                 visit_id       BIGSERIAL PRIMARY KEY,
@@ -209,17 +197,13 @@ public class CreateDatabase {
         """);
     }
 
-
-    //  Таблица events (журнал проходов)
-
-
     private void createEventsTable(Statement st) throws SQLException {
         st.execute("""
         CREATE TABLE IF NOT EXISTS events (
             event_id     BIGSERIAL PRIMARY KEY,
             uid          TEXT REFERENCES cards(uid),
             person_id    UUID REFERENCES personnel(person_id),
-            face_name    TEXT REFERENCES faces(face_name),
+            face_name    TEXT,
             device_id    TEXT REFERENCES devices(device_id),
             direction    TEXT NOT NULL,
             source       TEXT NOT NULL,
@@ -243,10 +227,6 @@ public class CreateDatabase {
     """);
     }
 
-
-    //  Роли и пользователи веб-морды
-
-
     private void createRolesAndUsersTables(Statement st) throws SQLException {
         st.execute("""
             CREATE TABLE IF NOT EXISTS roles (
@@ -266,42 +246,5 @@ public class CreateDatabase {
             )
         """);
     }
-
-
-//    //  Таблица нарушений техники безопасности
-//
-//    private void createSafetyIncidentsTable(Statement st) throws SQLException {
-//        st.execute("""
-//            CREATE TABLE IF NOT EXISTS safety_incidents (
-//                incident_id     BIGSERIAL PRIMARY KEY,
-//                person_id       UUID REFERENCES personnel(person_id),
-//                guest_id        UUID REFERENCES guests(guest_id),
-//                device_id       TEXT REFERENCES devices(device_id),
-//                event_time      TIMESTAMPTZ NOT NULL DEFAULT now(),
-//                type            TEXT NOT NULL,
-//                severity        TEXT,
-//                description     TEXT,
-//                image_url       TEXT,
-//                status          TEXT NOT NULL DEFAULT 'NEW',
-//                handled_by      UUID REFERENCES personnel(person_id),
-//                handled_at      TIMESTAMPTZ,
-//                created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-//            )
-//        """);
-//
-//        st.execute("""
-//            CREATE INDEX IF NOT EXISTS idx_safety_incidents_time
-//                ON safety_incidents(event_time)
-//        """);
-//
-//        st.execute("""
-//            CREATE INDEX IF NOT EXISTS idx_safety_incidents_person
-//                ON safety_incidents(person_id)
-//        """);
-//
-//        st.execute("""
-//            CREATE INDEX IF NOT EXISTS idx_safety_incidents_type
-//                ON safety_incidents(type)
-//        """);
-//    }
 }
+

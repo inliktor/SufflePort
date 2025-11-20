@@ -6,9 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface DeviceRepository extends JpaRepository<Device, String> {
-    // Поиск устройства по имени
-    List<Device> findByName(String name);
+    // Поиск устройств по типу
+    List<Device> findByKind(String kind);
 
-    // По подстроке в имени
-    List<Device> findByNameContainingIgnoreCase(String fragment);
+    // Поиск по подстроке в локации
+    List<Device> findByLocationContainingIgnoreCase(String fragment);
 }

@@ -4,8 +4,9 @@ import org.suffleport.zwloader.domain.Position;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface PositionRepository extends JpaRepository<Position, Long> {
+public interface PositionRepository extends JpaRepository<Position, UUID> {
     // Поиск позиции по названию
     Position findByName(String name);
 

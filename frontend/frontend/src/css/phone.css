@@ -1,5 +1,324 @@
-/* Стили для мобильных (phone) */
-.phone\:nav { @apply flex flex-col gap-2 text-sm; }
-.phone\:card { @apply p-3 rounded-lg shadow bg-white; }
-.phone\:table { @apply w-full text-xs; }
+/* ===============================================
+   MOBILE-FIRST СТИЛИ (до 768px)
+   =============================================== */
+
+/* Базовые адаптации для мобильных */
+@media (max-width: 767px) {
+  /* Отступы и размеры контейнеров */
+  .page-wrapper {
+    @apply px-3 py-3;
+  }
+
+  /* ===== КНОПКИ ===== */
+  .btn-primary,
+  .btn-secondary {
+    @apply w-full px-4 py-3.5 text-base font-semibold;
+    @apply touch-manipulation; /* Улучшает отклик на касание */
+    min-height: 44px; /* Минимальный размер для касания по Apple HIG */
+  }
+
+  .btn-danger,
+  .btn-success {
+    @apply px-3 py-2.5 text-sm;
+    min-height: 40px;
+  }
+
+  .btn-icon {
+    @apply p-3;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Группа кнопок на мобильных */
+  .button-group {
+    @apply flex flex-col gap-3 w-full;
+  }
+
+  .button-group > button {
+    @apply w-full;
+  }
+
+  /* ===== КАРТОЧКИ ===== */
+  .card {
+    @apply p-4 rounded-lg;
+  }
+
+  .stat-card {
+    @apply p-4 rounded-lg;
+  }
+
+  .device-card {
+    @apply p-4 rounded-lg;
+  }
+
+  /* ===== НАВИГАЦИЯ ===== */
+  .nav-item {
+    @apply px-3 py-3 text-base;
+    min-height: 48px;
+  }
+
+  .nav-item-mobile {
+    @apply px-4 py-3.5 text-base;
+    min-height: 48px;
+    @apply touch-manipulation;
+  }
+
+  /* ===== ФОРМЫ ===== */
+  .input-field {
+    @apply px-4 py-3.5 text-base;
+    min-height: 48px;
+    font-size: 16px; /* Предотвращает зум на iOS */
+  }
+
+  .label {
+    @apply text-base mb-2;
+  }
+
+  select.input-field {
+    font-size: 16px;
+  }
+
+  textarea.input-field {
+    @apply py-3 text-base;
+    min-height: 100px;
+    font-size: 16px;
+  }
+
+  /* ===== ТАБЛИЦЫ - Адаптивный вид ===== */
+  .data-table {
+    @apply block overflow-x-auto -mx-3;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table thead {
+    @apply hidden; /* Скрываем заголовки на мобильных */
+  }
+
+  .data-table tbody {
+    @apply block;
+  }
+
+  .data-table tr {
+    @apply block mb-4 bg-white rounded-lg shadow-sm border border-slate-200 p-4;
+  }
+
+  .data-table td {
+    @apply block px-0 py-2 border-b-0 text-base;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    @apply block text-xs font-semibold text-slate-500 mb-1 uppercase;
+  }
+
+  /* ===== МОДАЛЬНЫЕ ОКНА ===== */
+  .modal-overlay {
+    @apply p-0;
+  }
+
+  .modal-content {
+    @apply rounded-t-2xl rounded-b-none max-h-[95vh] w-full;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .modal-header {
+    @apply p-4 sticky top-0 bg-white z-10;
+  }
+
+  .modal-body {
+    @apply p-4;
+  }
+
+  .modal-footer {
+    @apply p-4 flex-col gap-2;
+  }
+
+  .modal-footer > button {
+    @apply w-full;
+  }
+
+  /* ===== СОБЫТИЯ ===== */
+  .event-item {
+    @apply flex-col space-x-0 space-y-3 p-4;
+  }
+
+  .event-icon {
+    @apply w-12 h-12;
+  }
+
+  /* ===== BADGES ===== */
+  .badge {
+    @apply px-2.5 py-1.5 text-xs;
+  }
+
+  /* ===== TOAST УВЕДОМЛЕНИЯ ===== */
+  .toast {
+    @apply min-w-[calc(100%-2rem)] mx-4 text-sm;
+  }
+
+  /* ===== СКРЫТИЕ НА МОБИЛЬНЫХ ===== */
+  .mobile-hidden {
+    @apply hidden;
+  }
+
+  /* ===== ПОКАЗ ТОЛЬКО НА МОБИЛЬНЫХ ===== */
+  .mobile-only {
+    @apply block;
+  }
+
+  /* ===== GRID АДАПТАЦИЯ ===== */
+  .grid {
+    @apply gap-3;
+  }
+
+  .grid.grid-cols-2,
+  .grid.grid-cols-3,
+  .grid.grid-cols-4 {
+    @apply grid-cols-1;
+  }
+
+  /* Для статистики оставляем 2 колонки */
+  .stats-grid {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  /* ===== ТЕКСТ ===== */
+  h1 {
+    @apply text-2xl;
+  }
+
+  h2 {
+    @apply text-xl;
+  }
+
+  h3 {
+    @apply text-lg;
+  }
+
+  /* ===== SIDEBAR/MENU ===== */
+  .sidebar {
+    @apply fixed inset-0 z-40 transform transition-transform duration-300;
+  }
+
+  .sidebar.closed {
+    @apply -translate-x-full;
+  }
+
+  /* ===== FAB (Floating Action Button) ===== */
+  .fab {
+    @apply fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg;
+    @apply bg-gradient-to-r from-blue-600 to-blue-700;
+    @apply flex items-center justify-center text-white;
+    @apply hover:shadow-xl transition-all duration-300;
+    @apply active:scale-95 touch-manipulation;
+    z-index: 30;
+  }
+
+  /* ===== АКТИВНЫЕ СОСТОЯНИЯ ===== */
+  button:active,
+  a:active,
+  .clickable:active {
+    @apply opacity-80 scale-95;
+  }
+
+  /* ===== SAFE AREA (для iPhone с вырезом) ===== */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ===== ПРОКРУТКА ===== */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    @apply overscroll-contain;
+  }
+
+  /* ===== FIXED HEADER ===== */
+  header {
+    @apply sticky top-0 z-30 bg-white shadow-sm;
+  }
+
+  /* ===== BOTTOM NAVIGATION ===== */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200;
+    @apply flex items-center justify-around p-2 safe-bottom z-30;
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center justify-center p-2 min-w-[60px];
+    @apply text-slate-600 hover:text-blue-600 transition-colors;
+    @apply touch-manipulation;
+  }
+
+  .bottom-nav-item.active {
+    @apply text-blue-600;
+  }
+
+  .bottom-nav-item svg {
+    @apply w-6 h-6 mb-1;
+  }
+
+  .bottom-nav-item span {
+    @apply text-xs;
+  }
+}
+
+/* Landscape на мобильных */
+@media (max-width: 767px) and (orientation: landscape) {
+  .modal-content {
+    @apply max-h-[90vh] overflow-y-auto;
+  }
+
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 8px);
+  }
+}
+
+/* Планшеты (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .mobile-only {
+    @apply hidden;
+  }
+
+  .grid.grid-cols-2 {
+    @apply grid-cols-2;
+  }
+
+  .grid.grid-cols-3,
+  .grid.grid-cols-4 {
+    @apply grid-cols-2;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    @apply w-auto;
+  }
+}
+
+/* Скрытие на десктопе */
+@media (min-width: 1024px) {
+  .mobile-only {
+    @apply hidden;
+  }
+
+  .mobile-hidden {
+    @apply block;
+  }
+}
 

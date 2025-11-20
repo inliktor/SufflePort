@@ -1,0 +1,21 @@
+# ===== Backend (Spring Boot) Multi-stage =====
+FROM eclipse-temurin:21-jdk AS build
+WORKDIR /app
+COPY gradlew gradlew.bat build.gradle settings.gradle ./
+COPY gradle ./gradle
+RUN chmod +x gradlew
+COPY src ./src
+COPY DB_SCHEMA.sql ./
+RUN ./gradlew clean bootJar -x test --no-daemon
+
+FROM eclipse-temurin:21-jre-alpine AS runtime
+WORKDIR /app
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
+ENV APP_PORT=8081
+ENV DB_URL=jdbc:postgresql://db:5432/shuffle_db
+ENV DB_USER=shuffle_app
+ENV DB_PASSWORD=change_me
+# Копируем только основной jar (без plain)
+COPY --from=build /app/build/libs/*-SNAPSHOT.jar app.jar
+EXPOSE 8081
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]

@@ -41,8 +41,8 @@ public class Event {
 
     // Смотри ниже — JSONB как объект!
     @Column(name = "meta", columnDefinition = "jsonb")
-    @Convert(converter = MetaJsonConverter.class)
-    private MetaData meta;
+    @Convert(converter = EventMetaConverter.class)
+    private EventMeta meta;
 
     @Column(name = "created_at", updatable = false, insertable = false)
     private OffsetDateTime createdAt;
