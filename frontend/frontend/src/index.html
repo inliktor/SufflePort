@@ -1,0 +1,1577 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>SufflePort — Контроль доступа</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-50 min-h-screen font-inter antialiased">
+
+  <!-- =============== MOBILE HEADER TOGGLE =============== -->
+  <div class="fixed top-3 right-3 z-50 md:hidden">
+    <button id="mobile-menu-btn" class="p-2.5 bg-white rounded-xl shadow-md border border-slate-200 hover:shadow-lg transition-all duration-200 active:scale-95">
+      <svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- =============== MOBILE SIDEBAR =============== -->
+  <div id="mobile-menu-overlay" class="overlay hidden opacity-0 pointer-events-none"></div>
+  <aside id="mobile-menu-sidebar" class="mobile-sidebar mobile-sidebar-hidden">
+    <div class="flex flex-col h-full">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <span class="font-bold text-slate-900 text-base">SufflePort</span>
+        </div>
+        <button id="close-menu-btn" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <a href="#" class="nav-item-mobile" data-section="dashboard">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Дашборд
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="events">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          События
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="stats">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Статистика
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="personnel">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Сотрудники
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="guests">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          Гости
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="positions">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          Должности
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="devices">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Устройства
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="cameras">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Камеры
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="faces">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Распознавание лиц
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="integrations">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Интеграции
+        </a>
+        <a href="#" class="nav-item-mobile" data-section="profile">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
+          Профиль
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-slate-100">
+        <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl">
+          <div class="avatar-circle avatar-sm bg-blue-100 text-blue-700 font-bold" id="user-avatar-mobile">U</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-slate-800 truncate" id="username-display-mobile">—</p>
+            <button id="logout-btn-mobile" class="text-xs text-red-500 hover:text-red-600 font-medium">Выйти</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =============== DESKTOP TOP NAVBAR =============== -->
+  <header id="desktop-topbar" class="hidden md:flex fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 items-center z-30 px-4 shadow-sm">
+    <!-- Brand -->
+    <div class="flex items-center space-x-2.5 mr-4 flex-shrink-0">
+      <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <span class="font-bold text-slate-900 text-sm tracking-tight hidden lg:block">SufflePort</span>
+    </div>
+    <div class="h-6 w-px bg-slate-200 mr-3 flex-shrink-0"></div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 flex items-center overflow-x-auto topbar-nav">
+      <a href="#" class="nav-item active" data-section="dashboard">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span class="hidden xl:inline">Дашборд</span>
+      </a>
+      <a href="#" class="nav-item" data-section="events">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <span class="hidden xl:inline">События</span>
+      </a>
+      <a href="#" class="nav-item" data-section="stats">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <span class="hidden xl:inline">Статистика</span>
+      </a>
+
+      <div class="h-5 w-px bg-slate-200 mx-1.5 flex-shrink-0"></div>
+
+      <a href="#" class="nav-item" data-section="personnel">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <span class="hidden xl:inline">Сотрудники</span>
+      </a>
+      <a href="#" class="nav-item" data-section="guests">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        <span class="hidden xl:inline">Гости</span>
+      </a>
+      <a href="#" class="nav-item" data-section="positions">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        <span class="hidden xl:inline">Должности</span>
+      </a>
+
+      <div class="h-5 w-px bg-slate-200 mx-1.5 flex-shrink-0"></div>
+
+      <a href="#" class="nav-item" data-section="devices">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <span class="hidden xl:inline">Устройства</span>
+      </a>
+      <a href="#" class="nav-item" data-section="cameras">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        <span class="hidden xl:inline">Камеры</span>
+      </a>
+      <a href="#" class="nav-item" data-section="faces">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="hidden xl:inline">Лица</span>
+      </a>
+
+      <div class="h-5 w-px bg-slate-200 mx-1.5 flex-shrink-0"></div>
+
+      <a href="#" class="nav-item" data-section="integrations">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+        <span class="hidden xl:inline">Интеграции</span>
+      </a>
+      <a href="#" class="nav-item" data-section="profile">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
+        <span class="hidden xl:inline">Профиль</span>
+      </a>
+    </nav>
+
+    <!-- Right: status + user -->
+    <div class="flex items-center space-x-3 ml-3 flex-shrink-0 pl-3 border-l border-slate-200">
+      <div class="hidden lg:flex items-center px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold border border-emerald-200">
+        <span class="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span>
+        Активна
+      </div>
+      <div class="avatar-circle avatar-sm bg-blue-100 text-blue-700 text-xs font-bold flex-shrink-0" id="user-avatar">U</div>
+      <p class="text-sm font-medium text-slate-700 truncate max-w-[110px] hidden lg:block" id="username-display">—</p>
+      <button id="logout-btn" class="text-xs text-red-500 hover:text-red-600 font-medium transition-colors whitespace-nowrap">Выйти</button>
+    </div>
+  </header>
+
+  <!-- =============== MAIN CONTENT =============== -->
+  <main class="md:pt-14 min-h-screen">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 md:top-14 z-20">
+      <div class="px-4 sm:px-6 py-3.5 flex items-center justify-between">
+        <div>
+          <h2 id="page-title" class="text-xl font-bold text-slate-900 leading-tight">Дашборд</h2>
+          <p class="text-xs text-slate-400 mt-0.5" id="page-subtitle">Обзор</p>
+        </div>
+        <div class="flex items-center space-x-2 mr-12 md:mr-0">
+          <button id="refresh-all" class="p-2 hover:bg-slate-100 rounded-lg transition-colors" title="Обновить все данные">
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+          <div class="hidden sm:flex md:hidden items-center px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-semibold border border-emerald-200">
+            <span class="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span>
+            Активна
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="px-4 sm:px-6 lg:px-8 py-5 space-y-5 max-w-[1600px] mx-auto xl:max-w-[1800px]">
+
+      <!-- ===== DASHBOARD ===== -->
+      <section id="dashboard" class="section-content">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+          <div class="stat-card stat-card-blue dashboard-tile" data-section="personnel" role="button" tabindex="0" aria-label="Открыть раздел сотрудники">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-blue-100 text-xs font-medium">Сотрудники</p>
+                <p class="text-3xl font-bold text-white mt-1" id="stat-personnel">—</p>
+              </div>
+              <div class="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-green dashboard-tile" data-section="personnel" role="button" tabindex="0" aria-label="Открыть раздел сотрудники и карты">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-green-100 text-xs font-medium">Активных карт</p>
+                <p class="text-3xl font-bold text-white mt-1" id="stat-cards">—</p>
+              </div>
+              <div class="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-purple dashboard-tile" data-section="events" role="button" tabindex="0" aria-label="Открыть раздел события">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-purple-100 text-xs font-medium">События 24ч</p>
+                <p class="text-3xl font-bold text-white mt-1" id="stat-events">—</p>
+              </div>
+              <div class="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-orange dashboard-tile" data-section="devices" role="button" tabindex="0" aria-label="Открыть раздел устройства">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-orange-100 text-xs font-medium">Устройств</p>
+                <p class="text-3xl font-bold text-white mt-1" id="stat-devices">—</p>
+              </div>
+              <div class="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-semibold text-slate-800">Последние события</h3>
+            <button class="text-sm text-blue-600 hover:text-blue-700 font-medium nav-link" data-section="events">Все →</button>
+          </div>
+          <div class="space-y-2" id="recent-events">
+            <div class="text-center py-8 text-slate-400 text-sm">Загрузка...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PERSONNEL ===== -->
+      <section id="personnel" class="section-content hidden">
+        <div class="card">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="text-base font-semibold text-slate-800">Сотрудники</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Управление персоналом и картами доступа</p>
+            </div>
+            <button id="add-personnel-btn" class="btn-primary w-full sm:w-auto text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              Добавить сотрудника
+            </button>
+          </div>
+          <div class="mb-4">
+            <input type="text" id="search-personnel" placeholder="Поиск по имени, телефону..." class="input-field w-full" />
+          </div>
+          <div class="list-meta-row mb-3">
+            <div id="personnel-results-meta" class="list-results-meta">Загрузка списка...</div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ФИО</th>
+                  <th class="hidden md:table-cell">Должность</th>
+                  <th class="hidden sm:table-cell">Телефон</th>
+                  <th class="hidden lg:table-cell">Карта</th>
+                  <th class="text-right">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="personnel-table-body">
+                <tr><td colspan="5" class="text-center py-8 text-slate-400 text-sm">Загрузка...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="personnel-pagination" class="pagination-shell mt-4"></div>
+        </div>
+      </section>
+
+      <!-- ===== EVENTS ===== -->
+      <section id="events" class="section-content hidden">
+        <div class="card">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="text-base font-semibold text-slate-800">Журнал событий</h3>
+              <p class="text-xs text-slate-400 mt-0.5">История прохода и действий в системе</p>
+            </div>
+            <button id="refresh-events" class="btn-secondary w-full sm:w-auto text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Обновить
+            </button>
+          </div>
+          <div class="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <select id="filter-source" class="input-field text-sm">
+              <option value="">Все источники</option>
+              <option value="NFC">NFC</option>
+              <option value="FACE">Распознавание лиц</option>
+              <option value="MANUAL">Вручную</option>
+            </select>
+            <select id="filter-direction" class="input-field text-sm">
+              <option value="">Все направления</option>
+              <option value="IN">Вход</option>
+              <option value="OUT">Выход</option>
+            </select>
+            <input type="date" id="filter-date" class="input-field text-sm" />
+          </div>
+          <div class="list-meta-row mb-3">
+            <div id="events-results-meta" class="list-results-meta">Загрузка журнала...</div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Время</th>
+                  <th>Сотрудник / UID</th>
+                  <th class="hidden md:table-cell">Источник</th>
+                  <th>Направление</th>
+                  <th class="hidden lg:table-cell">Устройство</th>
+                </tr>
+              </thead>
+              <tbody id="events-table-body">
+                <tr><td colspan="5" class="text-center py-8 text-slate-400 text-sm">Загрузка...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="events-pagination" class="pagination-shell mt-4"></div>
+        </div>
+
+        <div class="card mt-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h4 class="text-base font-semibold text-slate-800">Ручная корректировка события</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Добавление входа/выхода оператором с обязательной причиной</p>
+            </div>
+            <button id="manual-event-submit" class="btn-primary w-full sm:w-auto text-sm">Сохранить событие</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="label">Сотрудник</label>
+              <select id="manual-event-person" class="input-field">
+                <option value="">— Выберите сотрудника —</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">UID карты (опционально)</label>
+              <input id="manual-event-card" type="text" class="input-field" placeholder="CARD-123" />
+            </div>
+            <div>
+              <label class="label">Устройство</label>
+              <input id="manual-event-device" type="text" class="input-field" placeholder="dev-1" />
+            </div>
+            <div>
+              <label class="label">Направление</label>
+              <select id="manual-event-direction" class="input-field">
+                <option value="IN">Вход</option>
+                <option value="OUT">Выход</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="label">Причина *</label>
+              <input id="manual-event-reason" type="text" class="input-field" placeholder="Ручная корректировка из-за сбоя считывателя" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== DEVICES ===== -->
+      <section id="devices" class="section-content hidden">
+        <div class="card">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="text-base font-semibold text-slate-800">Устройства</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Терминалы и считыватели доступа</p>
+            </div>
+            <button id="add-device-btn" class="btn-primary w-full sm:w-auto text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              Добавить устройство
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="devices-grid">
+            <div class="text-center py-12 text-slate-400 col-span-full text-sm">Загрузка...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CAMERAS ===== -->
+      <section id="cameras" class="section-content hidden">
+        <div class="card">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="text-base font-semibold text-slate-800">Камеры</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Управление IP-камерами СКУД</p>
+            </div>
+            <button id="add-camera-btn" class="btn-primary w-full sm:w-auto text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              Добавить камеру
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="cameras-grid">
+            <div class="text-center py-12 text-slate-400 col-span-full text-sm">Загрузка...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== FACES ===== -->
+      <section id="faces" class="section-content hidden">
+        <div class="card">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h3 class="text-base font-semibold text-slate-800">Распознавание лиц</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Управление биометрическими данными CompreFace</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+              <h4 class="font-semibold text-slate-800 mb-4 text-sm">Отметить проход по лицу</h4>
+              <div class="space-y-4">
+                <div>
+                  <label class="label">Имя в системе распознавания</label>
+                  <input id="face-name" type="text" class="input-field" placeholder="Введите имя" />
+                </div>
+                <div>
+                  <label class="label">Устройство (необязательно)</label>
+                  <input id="face-device" type="text" class="input-field" placeholder="ID устройства" />
+                </div>
+                <button id="face-toggle-btn" class="btn-primary w-full">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Отметить проход
+                </button>
+              </div>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+              <h4 class="font-semibold text-slate-800 mb-4 text-sm">Выбранный сотрудник</h4>
+              <div class="bg-white rounded-lg p-4 mb-3 border border-slate-200">
+                <p id="faces-current-person" class="text-slate-500 text-sm">Выберите сотрудника в разделе «Сотрудники»</p>
+              </div>
+              <div id="faces-list-container" class="space-y-2"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== GUESTS ===== -->
+      <section id="guests" class="section-content hidden">
+        <div class="card">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="text-base font-semibold text-slate-800">Гости</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Регистрация и управление посетителями</p>
+            </div>
+            <button id="add-guest-btn" class="btn-primary w-full sm:w-auto text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              Добавить гостя
+            </button>
+          </div>
+          <div class="mb-4">
+            <input type="text" id="search-guests" placeholder="Поиск по имени, компании, документу..." class="input-field w-full" />
+          </div>
+          <div class="list-meta-row mb-3">
+            <div id="guests-results-meta" class="list-results-meta">Загрузка списка...</div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ФИО</th>
+                  <th class="hidden md:table-cell">Компания</th>
+                  <th class="hidden sm:table-cell">Телефон</th>
+                  <th class="hidden lg:table-cell">Документ</th>
+                  <th class="text-right">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="guests-table-body">
+                <tr><td colspan="5" class="text-center py-8 text-slate-400 text-sm">Загрузка...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="guests-pagination" class="pagination-shell mt-4"></div>
+        </div>
+
+        <div class="card mt-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h4 class="text-base font-semibold text-slate-800">Визиты на сегодня</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Запуск/завершение/отмена визитов и check-in по коду</p>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+              <button id="guest-visit-create-btn" class="btn-primary w-full sm:w-auto text-sm">Запланировать визит</button>
+              <button id="guest-visits-refresh" class="btn-secondary w-full sm:w-auto text-sm">Обновить</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+            <select id="guest-visits-status-filter" class="input-field">
+              <option value="">Все статусы</option>
+              <option value="PLANNED">PLANNED</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="FINISHED">FINISHED</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+            <input id="guest-checkin-code" type="text" class="input-field" placeholder="VISIT:123" />
+            <button id="guest-checkin-btn" class="btn-primary text-sm">Check-in по коду</button>
+            <button id="guest-scan-qr-btn" class="btn-secondary text-sm">Сканировать QR</button>
+          </div>
+          <div id="guest-checkin-info" class="hidden mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-sm text-emerald-900"></div>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Гость</th>
+                  <th class="hidden md:table-cell">Хост</th>
+                  <th>Статус</th>
+                  <th class="hidden lg:table-cell">Период</th>
+                  <th class="text-right">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="guest-visits-today-body">
+                <tr><td colspan="5" class="text-center py-8 text-slate-400 text-sm">Загрузка визитов...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <div id="guest-qr-scanner-modal" class="modal-overlay-base hidden">
+        <div class="modal-content max-w-md mx-auto">
+          <div class="modal-header flex justify-between items-center">
+            <h3 class="text-lg font-bold text-slate-900">Сканер QR визита</h3>
+            <button id="close-guest-qr-scanner" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="modal-body space-y-3">
+            <video id="guest-qr-video" class="w-full rounded-xl bg-slate-900 aspect-video" autoplay playsinline muted></video>
+            <p class="text-xs text-slate-500">Наведите камеру на QR с кодом вида VISIT:123</p>
+            <button id="stop-guest-qr-scanner" class="btn-secondary w-full">Остановить сканер</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="guest-visit-create-modal" class="modal-overlay-base hidden">
+        <div class="modal-content max-w-lg mx-auto">
+          <div class="modal-header flex justify-between items-center">
+            <h3 class="text-lg font-bold text-slate-900">Запланировать визит</h3>
+            <button id="close-guest-visit-create-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <form id="guest-visit-create-form" class="flex flex-col overflow-hidden">
+            <div class="modal-body space-y-4">
+              <div>
+                <label class="label">Гость *</label>
+                <select id="guest-visit-create-guest" class="input-field" required>
+                  <option value="">— Выберите гостя —</option>
+                </select>
+              </div>
+              <div>
+                <label class="label">Принимающий сотрудник *</label>
+                <select id="guest-visit-create-host" class="input-field" required>
+                  <option value="">— Выберите сотрудника —</option>
+                </select>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="label">Начало *</label>
+                  <input id="guest-visit-create-from" type="datetime-local" class="input-field" required />
+                </div>
+                <div>
+                  <label class="label">Окончание *</label>
+                  <input id="guest-visit-create-to" type="datetime-local" class="input-field" required />
+                </div>
+              </div>
+              <div>
+                <label class="label">Причина визита</label>
+                <input id="guest-visit-create-reason" type="text" class="input-field" placeholder="Встреча, доставка, сервис" />
+              </div>
+            </div>
+            <div class="modal-footer flex gap-3">
+              <button type="button" id="cancel-guest-visit-create-modal" class="btn-secondary flex-1">Отмена</button>
+              <button type="submit" class="btn-primary flex-1">Создать визит</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="guest-visit-qr-modal" class="modal-overlay-base hidden">
+        <div class="modal-content max-w-md mx-auto">
+          <div class="modal-header flex justify-between items-center">
+            <h3 class="text-lg font-bold text-slate-900">QR пропуск гостя</h3>
+            <button id="close-guest-visit-qr-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="modal-body space-y-4">
+            <div class="bg-white border border-slate-200 rounded-xl p-3 flex justify-center">
+              <img id="guest-visit-qr-image" alt="QR визита" class="w-64 h-64 object-contain" />
+            </div>
+            <div class="text-sm text-slate-700 space-y-1">
+              <div>Гость: <span id="guest-visit-qr-guest" class="font-medium">—</span></div>
+              <div>Хост: <span id="guest-visit-qr-host" class="font-medium">—</span></div>
+              <div>Период: <span id="guest-visit-qr-period" class="font-medium">—</span></div>
+              <div>Статус: <span id="guest-visit-qr-status" class="font-medium">—</span></div>
+            </div>
+          </div>
+          <div class="modal-footer flex gap-3">
+            <button type="button" id="close-guest-visit-qr-modal-btn" class="btn-secondary flex-1">Закрыть</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== POSITIONS ===== -->
+      <section id="positions" class="section-content hidden">
+        <div class="card">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="text-base font-semibold text-slate-800">Должности</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Управление должностями и уровнями доступа</p>
+            </div>
+            <button id="add-position-btn" class="btn-primary w-full sm:w-auto text-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              Добавить должность
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Название</th>
+                  <th class="hidden sm:table-cell">Уровень доступа</th>
+                  <th class="text-right">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="positions-table-body">
+                <tr><td colspan="3" class="text-center py-8 text-slate-400 text-sm">Загрузка...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== INTEGRATIONS ===== -->
+      <section id="integrations" class="section-content hidden">
+        <div class="space-y-5">
+          <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
+            <h3 class="text-lg font-bold mb-1">Интеграции с внешними системами</h3>
+            <p class="text-blue-100 text-sm">Подключите сторонние контроллеры доступа, IP-домофоны и умные замки напрямую через UI</p>
+          </div>
+
+          <!-- Dahua -->
+          <div class="card">
+            <div class="flex items-start justify-between mb-5">
+              <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-200 flex-shrink-0">
+                  <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-900">Dahua SDK</h4>
+                  <p class="text-xs text-slate-500">Контроллеры доступа, IP-камеры, замки</p>
+                </div>
+              </div>
+              <span id="dahua-status-badge" class="badge bg-slate-100 text-slate-500">Не настроено</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="label">IP-адрес устройства</label>
+                <input id="dahua-host" type="text" class="input-field" placeholder="192.168.1.100" />
+              </div>
+              <div>
+                <label class="label">Порт</label>
+                <input id="dahua-port" type="number" class="input-field" placeholder="80" value="80" />
+              </div>
+              <div>
+                <label class="label">Логин</label>
+                <input id="dahua-user" type="text" class="input-field" placeholder="admin" autocomplete="off" />
+              </div>
+              <div>
+                <label class="label">Пароль</label>
+                <input id="dahua-pass" type="password" class="input-field" placeholder="••••••••" autocomplete="new-password" />
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 mt-4">
+              <button id="dahua-test-btn" class="btn-secondary text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Проверить соединение
+              </button>
+              <button id="dahua-save-btn" class="btn-primary text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                Сохранить настройки
+              </button>
+            </div>
+            <p id="dahua-test-result" class="mt-3 text-sm hidden"></p>
+          </div>
+
+          <!-- Home Assistant -->
+          <div class="card">
+            <div class="flex items-start justify-between mb-5">
+              <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center border border-orange-200 flex-shrink-0">
+                  <svg class="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-900">Home Assistant</h4>
+                  <p class="text-xs text-slate-500">Интеграция через /api/ha</p>
+                </div>
+              </div>
+              <span class="badge bg-emerald-100 text-emerald-700">Активно</span>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 space-y-2 border border-slate-100">
+              <p class="text-xs text-slate-700"><span class="font-mono bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-600">POST /api/ha/nfc/toggle?uid=&device=</span></p>
+              <p class="text-xs text-slate-700"><span class="font-mono bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-600">POST /api/ha/face/toggle?face=&device=</span></p>
+              <p class="text-xs text-slate-700"><span class="font-mono bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-600">GET /api/ha/has-access?uid=</span></p>
+              <p class="text-xs text-slate-700"><span class="font-mono bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-600">POST /api/ha/security-alert</span></p>
+            </div>
+          </div>
+
+          <!-- Webhook -->
+          <div class="card">
+            <div class="flex items-start justify-between mb-5">
+              <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center border border-violet-200 flex-shrink-0">
+                  <svg class="w-7 h-7 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-900">Webhook / HTTP</h4>
+                  <p class="text-xs text-slate-500">Hikvision, ZKTeco, custom REST API</p>
+                </div>
+              </div>
+              <span id="webhook-status-badge" class="badge bg-slate-100 text-slate-500">Не настроено</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="label">URL устройства</label>
+                <input id="webhook-url" type="url" class="input-field" placeholder="http://192.168.1.200/api/door/open" />
+              </div>
+              <div>
+                <label class="label">HTTP метод</label>
+                <select id="webhook-method" class="input-field">
+                  <option value="POST">POST</option>
+                  <option value="GET">GET</option>
+                  <option value="PUT">PUT</option>
+                </select>
+              </div>
+              <div>
+                <label class="label">Заголовок авторизации</label>
+                <input id="webhook-auth" type="text" class="input-field" placeholder="Bearer token123" />
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 mt-4">
+              <button id="webhook-test-btn" class="btn-secondary text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Тест запрос
+              </button>
+              <button id="webhook-save-btn" class="btn-primary text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                Сохранить
+              </button>
+            </div>
+            <p id="webhook-test-result" class="mt-3 text-sm hidden"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PROFILE ===== -->
+      <section id="profile" class="section-content hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+          <!-- Left column: avatar + account info -->
+          <div class="space-y-5">
+            <!-- Avatar card -->
+            <div class="card flex flex-col items-center text-center">
+              <div class="relative mb-4">
+                <div id="profile-avatar" class="w-24 h-24 rounded-full bg-slate-200 flex items-center justify-center text-3xl font-bold text-slate-500 overflow-hidden border-4 border-white shadow-md">
+                  <span id="profile-avatar-initials">?</span>
+                  <img id="profile-avatar-img" src="" alt="" class="hidden w-full h-full object-cover" />
+                </div>
+                <button id="profile-upload-photo-btn" type="button"
+                  class="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 text-white rounded-full items-center justify-center shadow hover:bg-blue-700 transition-colors hidden"
+                  title="Загрузить фото">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </button>
+              </div>
+              <input type="file" id="profile-photo-input" accept="image/*" capture="environment" class="hidden" />
+              <div id="profile-fullname" class="text-lg font-bold text-slate-900 mb-1">—</div>
+              <div id="profile-role-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mb-2">—</div>
+              <div class="text-sm text-slate-500" id="profile-username">—</div>
+            </div>
+
+            <!-- Account details -->
+            <div class="card">
+              <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Учётная запись</h3>
+              <div class="space-y-3">
+                <div>
+                  <div class="text-xs text-slate-400 mb-0.5">Email</div>
+                  <div class="text-sm font-medium text-slate-900 break-words" id="profile-email">—</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-400 mb-0.5">Администратор</div>
+                  <div id="profile-isAdmin">—</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-400 mb-0.5">Зарегистрирован</div>
+                  <div class="text-sm text-slate-700" id="profile-createdAt">—</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-400 mb-0.5">User ID</div>
+                  <div class="text-xs text-slate-500 break-all" id="profile-userId">—</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-400 mb-0.5">Person ID</div>
+                  <div class="text-xs text-slate-500 break-all" id="profile-personId">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right column: edit form + actions -->
+          <div class="lg:col-span-2 space-y-5">
+
+            <!-- Personnel edit — shown only if user has linked personnel record -->
+            <div id="profile-edit-section" class="card hidden">
+              <h3 class="text-base font-semibold text-slate-800 mb-4">Личные данные</h3>
+              <input type="hidden" id="profile-person-id" />
+              <form id="profile-edit-form">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="label">Фамилия *</label>
+                    <input id="profile-edit-lastName" type="text" class="input-field" required />
+                  </div>
+                  <div>
+                    <label class="label">Имя *</label>
+                    <input id="profile-edit-firstName" type="text" class="input-field" required />
+                  </div>
+                  <div>
+                    <label class="label">Отчество</label>
+                    <input id="profile-edit-middleName" type="text" class="input-field" />
+                  </div>
+                  <div>
+                    <label class="label">Телефон</label>
+                    <input id="profile-edit-phone" type="tel" class="input-field" />
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary w-full mt-4">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                  Сохранить изменения
+                </button>
+              </form>
+            </div>
+
+            <!-- Notice when no personnel linked -->
+            <div id="profile-no-person-notice" class="card hidden">
+              <div class="flex items-start space-x-3">
+                <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div>
+                  <p class="text-sm font-medium text-slate-800">Аккаунт не привязан к сотруднику</p>
+                  <p class="text-xs text-slate-500 mt-1">Для редактирования личных данных аккаунт должен быть привязан к записи сотрудника администратором.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+              <h3 class="text-base font-semibold text-slate-800 mb-4">Действия</h3>
+              <div class="space-y-3">
+                <button id="profile-refresh" class="btn-secondary w-full">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  Обновить профиль
+                </button>
+                <button id="profile-logout" class="btn-danger w-full">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                  Выйти из системы
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== STATISTICS ===== -->
+      <section id="stats" class="section-content hidden">
+        <!-- Period + refresh -->
+        <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center space-x-2">
+            <label class="text-sm text-slate-600 font-medium">Период:</label>
+            <select id="stats-period" class="input-field w-auto py-1.5 px-3 text-sm">
+              <option value="7">7 дней</option>
+              <option value="30">30 дней</option>
+              <option value="1">24 часа</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="stats-export-btn" class="btn-secondary text-sm">Скачать отчет (CSV)</button>
+            <button id="stats-refresh-btn" class="btn-secondary text-sm">Обновить</button>
+          </div>
+        </div>
+
+        <!-- Summary stat cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+          <div class="stat-card stat-card-blue">
+            <p class="text-white/80 text-xs font-medium uppercase tracking-wide">Всего проходов</p>
+            <p class="text-3xl font-bold text-white mt-1" id="stat-total-events">—</p>
+          </div>
+          <div class="stat-card stat-card-green">
+            <p class="text-white/80 text-xs font-medium uppercase tracking-wide">Входов</p>
+            <p class="text-3xl font-bold text-white mt-1" id="stat-total-in">—</p>
+          </div>
+          <div class="stat-card stat-card-orange">
+            <p class="text-white/80 text-xs font-medium uppercase tracking-wide">Выходов</p>
+            <p class="text-3xl font-bold text-white mt-1" id="stat-total-out">—</p>
+          </div>
+          <div class="stat-card stat-card-purple">
+            <p class="text-white/80 text-xs font-medium uppercase tracking-wide">Активных сотрудников</p>
+            <p class="text-3xl font-bold text-white mt-1" id="stat-active-personnel">—</p>
+          </div>
+        </div>
+
+        <!-- Charts 2×2 grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="card">
+            <h3 class="text-base font-semibold text-slate-800 mb-4">Проходы по дням</h3>
+            <canvas id="chart-events-by-day"></canvas>
+          </div>
+          <div class="card flex flex-col items-center">
+            <h3 class="text-base font-semibold text-slate-800 mb-4 self-start">Вход / Выход</h3>
+            <canvas id="chart-in-vs-out" style="max-height:280px;"></canvas>
+          </div>
+          <div class="card">
+            <h3 class="text-base font-semibold text-slate-800 mb-4">Топ-10 сотрудников</h3>
+            <canvas id="chart-top-personnel"></canvas>
+          </div>
+          <div class="card">
+            <h3 class="text-base font-semibold text-slate-800 mb-4">Проходы по устройствам</h3>
+            <canvas id="chart-by-device"></canvas>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ===== MODAL: ADD PERSONNEL (WIZARD) ===== -->
+  <div id="add-personnel-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-md mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Новый сотрудник</h3>
+        <button id="close-wizard-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="flex items-center justify-center mb-6">
+          <div class="flex items-center space-x-2">
+            <div class="flex flex-col items-center">
+              <div class="wizard-step-node active" id="wizard-step-node-1">1</div>
+              <span class="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Данные</span>
+            </div>
+            <div class="w-10 h-px bg-slate-200 mt-[-14px]"></div>
+            <div class="flex flex-col items-center">
+              <div class="wizard-step-node" id="wizard-step-node-2">2</div>
+              <span class="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Фото</span>
+            </div>
+            <div class="w-10 h-px bg-slate-200 mt-[-14px]"></div>
+            <div class="flex flex-col items-center">
+              <div class="wizard-step-node" id="wizard-step-node-3">3</div>
+              <span class="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Карта</span>
+            </div>
+          </div>
+        </div>
+        <div class="wizard-step-content" data-step="1">
+          <form id="personnel-step1-form" class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="label">Фамилия *</label>
+                <input id="field-lastName" name="lastName" type="text" class="input-field" placeholder="Иванов" required autocomplete="off" />
+                <p class="field-hint text-xs text-slate-400 mt-1">Только буквы, пробелы, дефисы</p>
+              </div>
+              <div>
+                <label class="label">Имя *</label>
+                <input id="field-firstName" name="firstName" type="text" class="input-field" placeholder="Иван" required autocomplete="off" />
+                <p class="field-hint text-xs text-slate-400 mt-1">Только буквы, пробелы, дефисы</p>
+              </div>
+            </div>
+            <div>
+              <label class="label">Отчество</label>
+              <input id="field-middleName" name="middleName" type="text" class="input-field" placeholder="Иванович" autocomplete="off" />
+            </div>
+            <div>
+              <label class="label">Должность</label>
+              <select name="positionId" id="position-select" class="input-field">
+                <option value="">— Не указана —</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Телефон</label>
+              <input id="field-phone" name="phone" type="tel" class="input-field" placeholder="+7 (999) 123-45-67" autocomplete="off" />
+              <p class="field-hint text-xs text-slate-400 mt-1">Формат: +7 (XXX) XXX-XX-XX или 8XXXXXXXXXX</p>
+            </div>
+            <div>
+              <label class="label">Дата рождения</label>
+              <input id="field-dob" name="dateOfBirth" type="date" class="input-field" />
+              <p class="field-hint text-xs text-slate-400 mt-1">Год от <span id="dob-min-year">1900</span> до <span id="dob-max-year">сегодня</span></p>
+            </div>
+          </form>
+        </div>
+        <div class="wizard-step-content hidden" data-step="2">
+          <div class="text-center space-y-4">
+            <div id="photo-preview-container" class="wizard-preview-wrapper mx-auto">
+              <svg id="photo-placeholder-icon" class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              <img id="photo-preview-img" class="wizard-preview-image hidden" src="" alt="Preview">
+            </div>
+            <p class="text-slate-500 text-sm">Фото для системы биометрической идентификации CompreFace</p>
+            <input type="file" id="personnel-photo" accept="image/*" capture="environment" class="hidden" />
+            <button type="button" id="upload-photo-btn" class="btn-secondary">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              Выбрать фото
+            </button>
+            <button type="button" id="capture-personnel-photo-btn" class="btn-secondary">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Снять с камеры
+            </button>
+            <p class="text-xs text-slate-400">Можно пропустить</p>
+          </div>
+        </div>
+        <div class="wizard-step-content hidden" data-step="3">
+          <div class="space-y-4">
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+              <p class="text-sm text-blue-800 font-medium">Привяжите NFC-карту к сотруднику</p>
+              <p class="text-xs text-blue-600 mt-1">Можно пропустить и добавить карту позже</p>
+            </div>
+            <div id="card-registration-status" class="hidden">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center space-x-3">
+                <div class="w-9 h-9 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div>
+                  <p class="font-semibold text-emerald-900 text-sm">Карта зарегистрирована</p>
+                  <p class="text-xs text-emerald-700 font-mono">UID: <span id="registered-card-uid"></span></p>
+                </div>
+              </div>
+            </div>
+            <button type="button" id="register-card-btn" class="btn-primary w-full">
+              <span id="card-btn-icon-default">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+              </span>
+              <span id="card-btn-icon-loading" class="hidden">
+                <svg class="w-4 h-4 mr-1.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </span>
+              <span id="card-btn-text">Сканировать карту</span>
+            </button>
+            <button type="button" id="reset-card-btn" class="btn-secondary w-full">Сбросить карту</button>
+            <p class="text-xs text-slate-400">Если UID не пришел из Home Assistant, снова приложите метку и нажмите «Сканировать карту».</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer flex gap-3">
+        <button type="button" id="prev-step-btn" class="btn-secondary flex-1 hidden">Назад</button>
+        <button type="button" id="next-step-btn" class="btn-primary flex-1">Далее</button>
+        <button type="button" id="finish-wizard-btn" class="btn-success flex-1 hidden">Создать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: EDIT PERSONNEL ===== -->
+  <div id="edit-personnel-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-md mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Редактировать сотрудника</h3>
+        <button id="close-edit-personnel-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="edit-personnel-form" class="flex flex-col overflow-hidden">
+        <div class="modal-body space-y-4">
+          <input type="hidden" id="edit-personnel-id" />
+          <div>
+            <label class="label">Фото сотрудника</label>
+            <div class="flex items-center space-x-3">
+              <div id="edit-p-photo-preview" class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <div class="flex-1 space-y-2">
+                <input id="edit-p-photo" type="file" accept="image/*" capture="environment" class="w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+                <div class="flex gap-2">
+                  <button type="button" id="capture-edit-personnel-photo-btn" class="btn-secondary text-xs flex-1">Камера</button>
+                  <button type="button" id="clear-edit-personnel-photo-btn" class="btn-secondary text-xs flex-1">Убрать фото</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="label">Фамилия *</label>
+              <input id="edit-p-lastName" type="text" class="input-field" required autocomplete="off" />
+              <p class="field-hint text-xs text-slate-400 mt-1">Только буквы, пробелы, дефисы</p>
+            </div>
+            <div>
+              <label class="label">Имя *</label>
+              <input id="edit-p-firstName" type="text" class="input-field" required autocomplete="off" />
+              <p class="field-hint text-xs text-slate-400 mt-1">Только буквы, пробелы, дефисы</p>
+            </div>
+          </div>
+          <div>
+            <label class="label">Отчество</label>
+            <input id="edit-p-middleName" type="text" class="input-field" autocomplete="off" />
+          </div>
+          <div>
+            <label class="label">Должность</label>
+            <select id="edit-p-positionId" class="input-field">
+              <option value="">— Не указана —</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Телефон</label>
+            <input id="edit-p-phone" type="tel" class="input-field" autocomplete="off" />
+            <p class="field-hint text-xs text-slate-400 mt-1">Формат: +7 (XXX) XXX-XX-XX или 8XXXXXXXXXX</p>
+          </div>
+          <div>
+            <label class="label">Дата рождения</label>
+            <input id="edit-p-dob" type="date" class="input-field" />
+          </div>
+          <div class="border-t border-slate-100 pt-4">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <label class="label !mb-0">Карты сотрудника</label>
+              <span class="text-xs text-slate-400">Можно активировать, отключать и удалять</span>
+            </div>
+            <div id="edit-p-cards-list" class="space-y-2">
+              <div class="text-xs text-slate-400">Загрузка карт...</div>
+            </div>
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
+              <input id="edit-p-card-uid" type="text" class="input-field font-mono" placeholder="UID карты, например CARD-123" autocomplete="off" />
+              <button type="button" id="edit-p-add-card-btn" class="btn-primary">Привязать карту</button>
+            </div>
+            <p class="field-hint text-xs text-slate-400 mt-2">Если карта уже назначена другому сотруднику, интерфейс предложит перепривязать её.</p>
+          </div>
+        </div>
+        <div class="modal-footer flex gap-3">
+          <button type="button" id="cancel-edit-personnel" class="btn-secondary flex-1">Отмена</button>
+          <button type="submit" class="btn-primary flex-1">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: EDIT GUEST ===== -->
+  <div id="edit-guest-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-md mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Редактировать гостя</h3>
+        <button id="close-edit-guest-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="edit-guest-form" class="flex flex-col overflow-hidden">
+        <div class="modal-body space-y-4">
+          <input type="hidden" id="edit-guest-id" />
+          <!-- Photo -->
+          <div class="flex items-center space-x-4">
+            <div id="edit-g-photo-preview" class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <div class="flex-1">
+              <label class="label">Фото гостя</label>
+              <input id="edit-g-photo" type="file" accept="image/*" capture="environment" class="block w-full text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+              <button type="button" id="capture-edit-guest-photo-btn" class="btn-secondary mt-2 w-full">Снять с камеры</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="label">Фамилия *</label>
+              <input id="edit-g-lastName" type="text" class="input-field" required />
+            </div>
+            <div>
+              <label class="label">Имя *</label>
+              <input id="edit-g-firstName" type="text" class="input-field" required />
+            </div>
+          </div>
+          <div>
+            <label class="label">Отчество</label>
+            <input id="edit-g-middleName" type="text" class="input-field" />
+          </div>
+          <div>
+            <label class="label">Телефон</label>
+            <input id="edit-g-phone" type="tel" class="input-field" />
+          </div>
+          <div>
+            <label class="label">Компания</label>
+            <input id="edit-g-company" type="text" class="input-field" />
+          </div>
+          <div>
+            <label class="label">Документ</label>
+            <input id="edit-g-document" type="text" class="input-field" placeholder="Серия и номер паспорта" />
+          </div>
+          <div>
+            <label class="label">Примечания</label>
+            <textarea id="edit-g-notes" class="input-field" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer flex gap-3">
+          <button type="button" id="cancel-edit-guest" class="btn-secondary flex-1">Отмена</button>
+          <button type="submit" class="btn-primary flex-1">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: ADD DEVICE (WIZARD) ===== -->
+  <div id="add-device-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-md mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Добавить устройство</h3>
+        <button id="close-device-wizard" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="flex items-center justify-center mb-6">
+          <div class="flex items-center space-x-2">
+            <div class="flex flex-col items-center">
+              <div class="wizard-step-node active" id="device-step-node-1">1</div>
+              <span class="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Данные</span>
+            </div>
+            <div class="w-10 h-px bg-slate-200 mt-[-14px]"></div>
+            <div class="flex flex-col items-center">
+              <div class="wizard-step-node" id="device-step-node-2">2</div>
+              <span class="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Локация</span>
+            </div>
+          </div>
+        </div>
+        <div class="device-wizard-step" data-step="1">
+          <div class="space-y-4">
+            <div>
+              <label class="label">ID устройства *</label>
+              <input id="device-id" type="text" class="input-field" placeholder="reader-01" autocomplete="off" />
+              <p class="text-xs text-slate-400 mt-1">Только латиница, цифры, дефис, подчёркивание</p>
+            </div>
+            <div>
+              <label class="label">Тип *</label>
+              <select id="device-kind" class="input-field">
+                <option value="">— Выберите тип —</option>
+                <option value="NFC_READER">NFC Reader</option>
+                <option value="CAMERA">Камера</option>
+                <option value="TURNSTILE">Турникет</option>
+                <option value="DOOR_LOCK">Электрозамок</option>
+                <option value="BARRIER">Шлагбаум</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="device-wizard-step hidden" data-step="2">
+          <div class="space-y-4">
+            <div>
+              <label class="label">Расположение</label>
+              <input id="device-location" type="text" class="input-field" placeholder="Главный вход / Проходная" autocomplete="off" />
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Проверка данных</p>
+              <p class="text-sm text-slate-700"><span class="text-slate-400">ID:</span> <span id="device-preview-id" class="font-semibold">—</span></p>
+              <p class="text-sm text-slate-700 mt-1"><span class="text-slate-400">Тип:</span> <span id="device-preview-kind" class="font-semibold">—</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer flex gap-3">
+        <button id="device-prev-btn" class="btn-secondary hidden flex-1">Назад</button>
+        <button id="device-next-btn" class="btn-primary flex-1">Далее</button>
+        <button id="device-finish-btn" class="btn-primary hidden flex-1">Создать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: EDIT DEVICE ===== -->
+  <div id="edit-device-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-md mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Редактировать устройство</h3>
+        <button id="close-edit-device-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="edit-device-form" class="flex flex-col overflow-hidden">
+        <div class="modal-body space-y-4">
+          <input type="hidden" id="edit-device-id" />
+          <div>
+            <label class="label">Тип устройства</label>
+            <select id="edit-d-kind" class="input-field">
+              <option value="NFC_READER">NFC Reader</option>
+              <option value="CAMERA">Камера</option>
+              <option value="TURNSTILE">Турникет</option>
+              <option value="DOOR_LOCK">Электрозамок</option>
+              <option value="BARRIER">Шлагбаум</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Расположение</label>
+            <input id="edit-d-location" type="text" class="input-field" />
+          </div>
+        </div>
+        <div class="modal-footer flex gap-3">
+          <button type="button" id="cancel-edit-device" class="btn-secondary flex-1">Отмена</button>
+          <button type="submit" class="btn-primary flex-1">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: ADD CAMERA ===== -->
+  <div id="add-camera-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-md mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Добавить камеру</h3>
+        <button id="close-add-camera-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="add-camera-form" class="flex flex-col overflow-hidden">
+        <div class="modal-body space-y-4">
+          <div>
+            <label class="label">ID камеры *</label>
+            <input id="cam-id" type="text" class="input-field" placeholder="cam-main-entrance" autocomplete="off" />
+            <p class="text-xs text-slate-400 mt-1">Только латиница, цифры, дефис, подчёркивание</p>
+          </div>
+          <div>
+            <label class="label">Название *</label>
+            <input id="cam-name" type="text" class="input-field" placeholder="Главный вход" autocomplete="off" />
+          </div>
+          <div>
+            <label class="label">RTSP URL</label>
+            <input id="cam-rtsp" type="text" class="input-field" placeholder="rtsp://192.168.1.100:554/stream1" autocomplete="off" />
+          </div>
+          <div>
+            <label class="label">Расположение</label>
+            <input id="cam-location" type="text" class="input-field" placeholder="Проходная, 1 этаж" autocomplete="off" />
+          </div>
+          <div>
+            <label class="label">Привязать к устройству</label>
+            <select id="cam-device" class="input-field">
+              <option value="">— Не привязывать —</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer flex gap-3">
+          <button type="button" id="cancel-add-camera" class="btn-secondary flex-1">Отмена</button>
+          <button type="submit" class="btn-primary flex-1">Добавить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: ADD GUEST (WIZARD) ===== -->
+  <div id="add-guest-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-md mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Добавить гостя</h3>
+        <button id="close-guest-wizard" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="flex items-center justify-center mb-6">
+          <div class="flex items-center space-x-2">
+            <div class="flex flex-col items-center">
+              <div class="wizard-step-node active" id="guest-step-node-1">1</div>
+              <span class="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">ФИО</span>
+            </div>
+            <div class="w-10 h-px bg-slate-200 mt-[-14px]"></div>
+            <div class="flex flex-col items-center">
+              <div class="wizard-step-node" id="guest-step-node-2">2</div>
+              <span class="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Контакты</span>
+            </div>
+          </div>
+        </div>
+        <div class="guest-wizard-step" data-step="1">
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="label">Фамилия *</label>
+                <input id="guest-lastName" type="text" class="input-field" placeholder="Петров" autocomplete="off" />
+                <p class="field-hint text-xs text-slate-400 mt-1">Только буквы, пробелы, дефисы</p>
+              </div>
+              <div>
+                <label class="label">Имя *</label>
+                <input id="guest-firstName" type="text" class="input-field" placeholder="Пётр" autocomplete="off" />
+                <p class="field-hint text-xs text-slate-400 mt-1">Только буквы, пробелы, дефисы</p>
+              </div>
+            </div>
+            <div>
+              <label class="label">Отчество</label>
+              <input id="guest-middleName" type="text" class="input-field" placeholder="Петрович" autocomplete="off" />
+            </div>
+          </div>
+        </div>
+        <div class="guest-wizard-step hidden" data-step="2">
+          <div class="space-y-4">
+            <div>
+              <label class="label">Телефон</label>
+              <input id="guest-phone" type="tel" class="input-field" placeholder="+7 (999) 123-45-67" autocomplete="off" />
+              <p class="field-hint text-xs text-slate-400 mt-1">Формат: +7 (XXX) XXX-XX-XX или 8XXXXXXXXXX</p>
+            </div>
+            <div>
+              <label class="label">Компания</label>
+              <input id="guest-company" type="text" class="input-field" placeholder="ООО Ромашка" autocomplete="off" />
+            </div>
+            <div>
+              <label class="label">Фото гостя</label>
+              <div class="flex items-center space-x-3">
+                <div id="guest-photo-preview" class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <input id="guest-photo" type="file" accept="image/*" capture="environment" class="flex-1 text-xs text-slate-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+                <button type="button" id="capture-guest-photo-btn" class="btn-secondary text-xs">Камера</button>
+              </div>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Проверка</p>
+              <p class="text-sm text-slate-700"><span class="text-slate-400">ФИО:</span> <span id="guest-preview-name" class="font-semibold">—</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer flex gap-3">
+        <button id="guest-prev-btn" class="btn-secondary hidden flex-1">Назад</button>
+        <button id="guest-next-btn" class="btn-primary flex-1">Далее</button>
+        <button id="guest-finish-btn" class="btn-primary hidden flex-1">Создать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: ADD POSITION ===== -->
+  <div id="add-position-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-sm mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Добавить должность</h3>
+        <button id="close-add-position-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="add-position-form" class="flex flex-col overflow-hidden">
+        <div class="modal-body space-y-4">
+          <div>
+            <label class="label">Название *</label>
+            <input id="pos-name" type="text" class="input-field" placeholder="Охранник" autocomplete="off" />
+          </div>
+          <div>
+            <label class="label">Уровень доступа (0–10)</label>
+            <input id="pos-access" type="number" min="0" max="10" class="input-field" placeholder="0" />
+            <p class="text-xs text-slate-400 mt-1">0 — минимальный, 10 — максимальный</p>
+          </div>
+        </div>
+        <div class="modal-footer flex gap-3">
+          <button type="button" id="cancel-add-position" class="btn-secondary flex-1">Отмена</button>
+          <button type="submit" class="btn-primary flex-1">Создать</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: EDIT POSITION ===== -->
+  <div id="edit-position-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-sm mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Редактировать должность</h3>
+        <button id="close-edit-position-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="edit-position-form" class="flex flex-col overflow-hidden">
+        <div class="modal-body space-y-4">
+          <input type="hidden" id="edit-position-id" />
+          <div>
+            <label class="label">Название *</label>
+            <input id="edit-pos-name" type="text" class="input-field" required />
+          </div>
+          <div>
+            <label class="label">Уровень доступа (0–10)</label>
+            <input id="edit-pos-access" type="number" min="0" max="10" class="input-field" />
+            <p class="text-xs text-slate-400 mt-1">0 — минимальный, 10 — максимальный</p>
+          </div>
+        </div>
+        <div class="modal-footer flex gap-3">
+          <button type="button" id="cancel-edit-position" class="btn-secondary flex-1">Отмена</button>
+          <button type="submit" class="btn-primary flex-1">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: EDIT CAMERA ===== -->
+  <div id="edit-camera-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-md mx-auto">
+      <div class="modal-header flex justify-between items-center">
+        <h3 class="text-lg font-bold text-slate-900">Редактировать камеру</h3>
+        <button id="close-edit-camera-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="edit-camera-form" class="flex flex-col overflow-hidden">
+        <div class="modal-body space-y-4">
+          <input type="hidden" id="edit-camera-id" />
+          <div>
+            <label class="label">Название *</label>
+            <input id="edit-cam-name" type="text" class="input-field" required />
+          </div>
+          <div>
+            <label class="label">RTSP URL</label>
+            <input id="edit-cam-rtsp" type="text" class="input-field" placeholder="rtsp://192.168.1.100:554/stream1" />
+          </div>
+          <div>
+            <label class="label">Расположение</label>
+            <input id="edit-cam-location" type="text" class="input-field" />
+          </div>
+          <div>
+            <label class="label">Привязать к устройству</label>
+            <select id="edit-cam-device" class="input-field">
+              <option value="">— Не привязывать —</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer flex gap-3">
+          <button type="button" id="cancel-edit-camera" class="btn-secondary flex-1">Отмена</button>
+          <button type="submit" class="btn-primary flex-1">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay-base hidden">
+    <div class="bg-white rounded-2xl p-8 shadow-2xl text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-slate-600 font-medium text-sm">Загрузка...</p>
+    </div>
+  </div>
+
+  <!-- Offline Banner -->
+  <div id="backend-offline" class="offline-banner hidden">
+    Сервер недоступен — проверьте соединение
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

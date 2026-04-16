@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Вход — SufflePort</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen font-inter antialiased flex items-center justify-center p-4 safe-top safe-bottom">
+
+  <div class="auth-container">
+    <!-- Logo & Title -->
+    <div class="text-center mb-8">
+      <div class="auth-logo-wrapper">
+        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+      </div>
+      <h1 class="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">SufflePort</h1>
+      <p class="text-slate-500 font-medium text-sm">Система контроля доступа</p>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="auth-card animate-slideUp">
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab-btn active active-login" type="button">Вход</button>
+        <button id="tab-register" class="auth-tab-btn" type="button">Регистрация</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="space-y-5">
+        <div>
+          <label for="login-username" class="label">Email</label>
+          <input
+            id="login-username"
+            type="email"
+            name="username"
+            required
+            class="input-field"
+            placeholder="user@domain.ru"
+            autocomplete="email"
+            autofocus
+          />
+        </div>
+        <div>
+          <label for="login-password" class="label">Пароль</label>
+          <div class="relative">
+            <input
+              id="login-password"
+              type="password"
+              name="password"
+              required
+              class="input-field pr-12"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="absolute right-3 inset-y-0 my-auto h-fit text-slate-400 hover:text-slate-600 transition-colors p-1 rounded"
+              aria-label="Показать/скрыть пароль"
+              onclick="var f=document.getElementById('login-password');f.type=f.type==='password'?'text':'password';this.querySelector('.eye-open').classList.toggle('hidden');this.querySelector('.eye-closed').classList.toggle('hidden');"
+            >
+              <svg class="eye-open w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              <svg class="eye-closed w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary w-full py-4 text-base">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          </svg>
+          <span>Войти</span>
+        </button>
+      </form>
+
+      <!-- Register Form (hidden by default) -->
+      <form id="register-form" class="space-y-5 hidden">
+        <div>
+          <label for="reg-username" class="label">Имя пользователя</label>
+          <input
+            id="reg-username"
+            type="text"
+            name="username"
+            required
+            class="input-field"
+            placeholder="username"
+            autocomplete="username"
+          />
+        </div>
+        <div>
+          <label for="reg-email" class="label">Email</label>
+          <input
+            id="reg-email"
+            type="email"
+            name="email"
+            required
+            class="input-field"
+            placeholder="name@company.ru"
+            autocomplete="email"
+          />
+          <p class="mt-1.5 text-xs text-slate-500">Допускаются только российские домены: <span class="font-medium text-slate-700">.ru, .su, .рф</span></p>
+        </div>
+        <div>
+          <label for="reg-password" class="label">Пароль</label>
+          <div class="relative">
+            <input
+              id="reg-password"
+              type="password"
+              name="password"
+              required
+              minlength="8"
+              pattern="^(?=.*\\d)(?=.*[\\p{L}A-Za-z]).{8,128}$"
+              title="Пароль должен содержать минимум 8 символов, хотя бы одну букву и одну цифру"
+              class="input-field pr-12"
+              placeholder="Минимум 8 символов, буква и цифра"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="absolute right-3 inset-y-0 my-auto h-fit text-slate-400 hover:text-slate-600 transition-colors p-1 rounded"
+              aria-label="Показать/скрыть пароль"
+              onclick="var f=document.getElementById('reg-password');f.type=f.type==='password'?'text':'password';this.querySelector('.eye-open').classList.toggle('hidden');this.querySelector('.eye-closed').classList.toggle('hidden');"
+            >
+              <svg class="eye-open w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              <svg class="eye-closed w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label for="reg-confirm" class="label">Подтвердите пароль</label>
+          <div class="relative">
+            <input
+              id="reg-confirm"
+              type="password"
+              name="confirmPassword"
+              required
+              minlength="8"
+              class="input-field pr-12"
+              placeholder="Повторите пароль"
+              autocomplete="new-password"
+            />
+            <button
+              type="button"
+              class="absolute right-3 inset-y-0 my-auto h-fit text-slate-400 hover:text-slate-600 transition-colors p-1 rounded"
+              aria-label="Показать/скрыть пароль"
+              onclick="var f=document.getElementById('reg-confirm');f.type=f.type==='password'?'text':'password';this.querySelector('.eye-open').classList.toggle('hidden');this.querySelector('.eye-closed').classList.toggle('hidden');"
+            >
+              <svg class="eye-open w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+              <svg class="eye-closed w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary w-full py-4 text-base">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+          <span>Создать аккаунт</span>
+        </button>
+      </form>
+
+      <!-- Error/Success Message -->
+      <div id="auth-message" class="hidden mt-4 p-4 rounded-lg text-sm font-medium"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-6 text-xs text-slate-400">
+      <p>© 2025 SufflePort СКУД</p>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <script type="module" src="./js/auth.js"></script>
+</body>
+</html>

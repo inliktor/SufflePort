@@ -1,0 +1,17 @@
+{
+  "name": "zwloader-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx tailwindcss -i src/css/input.css -o dist/assets/styles.css --watch",
+    "build": "npx tailwindcss -i src/css/input.css -o dist/assets/styles.css --minify",
+    "copy:backend": "node ./scripts/copy-to-backend.js",
+    "postbuild": "node ./scripts/copy-to-backend.js --yes"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.14",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.31"
+  }
+}

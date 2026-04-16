@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1
+FROM eclipse-temurin:21-jdk AS build
+WORKDIR /app
+
+# Copy only build scripts first — deps layer is cached unless these change
+COPY gradlew gradlew.bat build.gradle settings.gradle ./
+COPY gradle ./gradle
+RUN chmod +x gradlew
+
+# Pre-download all dependencies with BuildKit cache mount.
+# /root/.gradle is mounted as a persistent host cache — survives image rebuilds.
+# This layer is invalidated only if build.gradle / settings.gradle change.
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew dependencies --no-daemon --quiet
+
+# Now copy source and build. The cache mount keeps downloaded artifacts intact
+# so Gradle only recompiles changed sources on subsequent builds.
+COPY src ./src
+COPY DB_SCHEMA.sql ./
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew clean bootJar -x test --no-daemon
+
+FROM eclipse-temurin:21-jre-alpine AS runtime
+WORKDIR /app
+
+# ОПТИМИЗАЦИЯ ПАМЯТИ:
+# -XX:MaxRAMPercentage=75.0 : JVM сама поймет лимит Docker-контейнера и возьмет 75% под Heap (остальное под native, metaspace, stack).
+# -Xss512k : уменьшаем размер стека потока (по дефолту 1МБ). Для веб-сервисов обычно хватает 256k-512k, экономит память при большом числе потоков.
+# -XX:+UseContainerSupport : явно включаем поддержку контейнеров (обычно вкл по умолчанию в JDK 21, но полезно для надежности).
+# -XX:ReservedCodeCacheSize=128m : ограничиваем кэш JIT-компилятора (дефолт 240м).
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -Xss512k -XX:+UseContainerSupport -XX:ReservedCodeCacheSize=128m"
+
+ENV APP_PORT=8081
+
+COPY --from=build /app/build/libs/*-SNAPSHOT.jar app.jar
+
+EXPOSE 8081
+
+# Важно: MaxRAMPercentage работает только если ты ограничишь память самому контейнеру в docker-compose или docker run (например, deploy resources limits memory: 512M).
+# Если лимит контейнера не задан, используем явный -Xmx.
+# Вариант ниже универсальный: если лимиты контейнера есть - сработает MaxRAMPercentage.
+# Если хочешь жестко ограничить кучу, замени JAVA_OPTS на "-Xms128m -Xmx256m -Xss512k"
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar app.jar"]

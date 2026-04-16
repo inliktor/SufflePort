@@ -1,0 +1,379 @@
+/* ===============================================
+   MOBILE-FIRST СТИЛИ (до 768px)
+   =============================================== */
+
+/* Базовые адаптации для мобильных */
+@media (max-width: 767px) {
+  /* Отступы и размеры контейнеров */
+  .page-wrapper {
+    @apply px-3 py-3;
+  }
+
+  /* ===== КНОПКИ ===== */
+  .btn-primary,
+  .btn-secondary {
+    @apply w-full px-4 py-3.5 text-base font-semibold;
+    @apply touch-manipulation; /* Улучшает отклик на касание */
+    min-height: 44px; /* Минимальный размер для касания по Apple HIG */
+  }
+
+  .btn-danger,
+  .btn-success {
+    @apply px-3 py-2.5 text-sm;
+    min-height: 40px;
+  }
+
+  .btn-icon {
+    @apply p-3;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Группа кнопок на мобильных */
+  .button-group {
+    @apply flex flex-col gap-3 w-full;
+  }
+
+  .button-group > button {
+    @apply w-full;
+  }
+
+  /* ===== КАРТОЧКИ ===== */
+  .card {
+    @apply p-4 rounded-lg;
+  }
+
+  .stat-card {
+    @apply p-4 rounded-lg;
+  }
+
+  .device-card {
+    @apply p-4 rounded-lg;
+  }
+
+  /* ===== НАВИГАЦИЯ ===== */
+  .nav-item {
+    @apply px-3 py-3 text-base;
+    min-height: 48px;
+  }
+
+  .nav-item-mobile {
+    /* phone.css перекрывает базовые компоненты, поэтому повторяем flex-настройки */
+    @apply flex items-center space-x-3 px-4 py-3.5 text-base;
+    min-height: 48px;
+    @apply touch-manipulation;
+  }
+
+  .nav-item-mobile svg {
+    flex-shrink: 0;
+  }
+
+  /* ===== ФОРМЫ ===== */
+  .input-field {
+    @apply px-4 py-3.5 text-base;
+    min-height: 48px;
+    font-size: 16px; /* Предотвращает зум на iOS */
+  }
+
+  .label {
+    @apply text-base mb-2;
+  }
+
+  select.input-field {
+    font-size: 16px;
+  }
+
+  textarea.input-field {
+    @apply py-3 text-base;
+    min-height: 100px;
+    font-size: 16px;
+  }
+
+  /* ===== ТАБЛИЦЫ - Адаптивный вид ===== */
+  .data-table {
+    @apply block w-full;
+    overflow: visible;
+  }
+
+  /* На всякий случай прячем скроллбар, если его создадут внешние контейнеры */
+  .data-table::-webkit-scrollbar {
+    display: none;
+  }
+  .data-table {
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .data-table thead {
+    @apply hidden; /* Скрываем заголовки на мобильных */
+  }
+
+  .data-table tbody {
+    @apply block;
+  }
+
+  .data-table tr {
+    @apply block mb-3 bg-white rounded-2xl shadow-sm border-0 p-4;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 0 0 1px rgba(148,163,184,.18);
+  }
+
+  .data-table td {
+    @apply block px-0 py-1.5 border-b-0 text-sm text-slate-800;
+  }
+
+  /* Последний видимый td — без нижнего отступа */
+  .data-table td:last-child {
+    @apply pb-0;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    @apply block text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider uppercase;
+  }
+
+  /* Ячейки с кнопками (actions) — убираем метку и выравниваем по правому краю */
+  .data-table td.table-actions {
+    @apply flex justify-end gap-2 mt-2 pt-2;
+    border-top: 1px solid #f1f5f9; /* slate-100 */
+  }
+  .data-table td.table-actions::before {
+    content: none;
+  }
+
+  .list-meta-row {
+    @apply flex-col items-start gap-2;
+  }
+
+  .pagination-bar {
+    @apply gap-3 rounded-2xl p-3;
+  }
+
+  .pagination-summary {
+    @apply text-xs font-semibold tracking-wide uppercase text-slate-400;
+  }
+
+  .pagination-controls {
+    @apply grid grid-cols-2 gap-2 w-full;
+  }
+
+  .pagination-pages {
+    @apply col-span-2 flex flex-wrap gap-2;
+  }
+
+  .pagination-btn {
+    min-height: 44px;
+    @apply text-sm font-semibold;
+  }
+
+  .pagination-size-wrap {
+    @apply w-full justify-between;
+  }
+
+  .pagination-size-select {
+    min-height: 44px;
+    @apply flex-1;
+  }
+
+  /* ===== МОДАЛЬНЫЕ ОКНА (bottom sheet) ===== */
+  .modal-overlay {
+    @apply p-0;
+  }
+
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    @apply rounded-t-2xl w-full bg-white;
+    max-height: 85vh;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0);    }
+  }
+
+  .modal-header {
+    flex-shrink: 0;
+    @apply p-4 bg-white border-b border-slate-100;
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    @apply p-4;
+  }
+
+  .modal-footer {
+    flex-shrink: 0;
+    @apply p-4 flex flex-col gap-2 border-t border-slate-100 bg-white;
+  }
+
+  .modal-footer > button {
+    @apply w-full;
+  }
+
+  /* ===== СОБЫТИЯ ===== */
+  .event-item {
+    @apply flex-col space-x-0 space-y-3 p-4;
+  }
+
+  .event-icon {
+    @apply w-12 h-12;
+  }
+
+  /* ===== BADGES ===== */
+  .badge {
+    @apply px-2.5 py-1.5 text-xs;
+  }
+
+  /* ===== TOAST УВЕДОМЛЕНИЯ ===== */
+  .toast {
+    @apply min-w-[calc(100%-2rem)] mx-4 text-sm;
+  }
+
+  /* ===== СКРЫТИЕ НА МОБИЛЬНЫХ ===== */
+  .mobile-hidden {
+    @apply hidden;
+  }
+
+  /* ===== ПОКАЗ ТОЛЬКО НА МОБИЛЬНЫХ ===== */
+  .mobile-only {
+    @apply block;
+  }
+
+  /* ===== GRID АДАПТАЦИЯ ===== */
+  .grid {
+    @apply gap-3;
+  }
+
+  /* Collapse 3+ column grids to single column on mobile */
+  /* grid-cols-2 is intentionally preserved for stat cards and similar 2-up layouts */
+  .grid.grid-cols-3,
+  .grid.grid-cols-4 {
+    @apply grid-cols-1;
+  }
+
+  /* Alias for explicit 2-column grids on mobile */
+  .stats-grid {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  /* ===== ТЕКСТ ===== */
+  h1 {
+    @apply text-2xl;
+  }
+
+  h2 {
+    @apply text-xl;
+  }
+
+  h3 {
+    @apply text-lg;
+  }
+
+  /* ===== SIDEBAR/MENU ===== */
+  .sidebar {
+    @apply fixed inset-0 z-40 transform transition-transform duration-300;
+  }
+
+  .sidebar.closed {
+    @apply -translate-x-full;
+  }
+
+  /* ===== АКТИВНЫЕ СОСТОЯНИЯ ===== */
+  button:active,
+  a:active,
+  .clickable:active {
+    @apply opacity-80 scale-95;
+  }
+
+  /* ===== SAFE AREA (для iPhone с вырезом) ===== */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ===== ПРОКРУТКА ===== */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    @apply overscroll-contain;
+  }
+
+  /* ===== FIXED HEADER ===== */
+  header {
+    @apply sticky top-0 z-30 bg-white shadow-sm;
+  }
+
+  /* ===== WIZARD PROGRESS INDICATORS ===== */
+  .wizard-step {
+    @apply flex flex-col items-center;
+  }
+
+  .wizard-step.active .w-8 {
+    @apply bg-blue-600 text-white;
+  }
+
+  .wizard-step:not(.active) .w-8 {
+    @apply bg-slate-200 text-slate-600;
+  }
+
+  .wizard-step.active span {
+    @apply text-blue-600;
+  }
+
+  .wizard-step:not(.active) span {
+    @apply text-slate-500;
+  }
+}
+
+/* Landscape на мобильных */
+@media (max-width: 767px) and (orientation: landscape) {
+  .modal-content {
+    max-height: 90vh;
+  }
+
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 8px);
+  }
+}
+
+/* Планшеты (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .mobile-only {
+    @apply hidden;
+  }
+
+  .grid.grid-cols-2 {
+    @apply grid-cols-2;
+  }
+
+  .grid.grid-cols-3,
+  .grid.grid-cols-4 {
+    @apply grid-cols-2;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    @apply w-auto;
+  }
+}
+
+/* Скрытие на десктопе */
+@media (min-width: 1024px) {
+  .mobile-only {
+    @apply hidden;
+  }
+
+  .mobile-hidden {
+    @apply block;
+  }
+}
+
