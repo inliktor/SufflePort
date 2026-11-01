@@ -8,19 +8,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.suffleport.zwloader.domain.Personnel;
 import org.suffleport.zwloader.domain.Position;
 import org.suffleport.zwloader.repository.CardRepository;
-import org.suffleport.zwloader.repository.EventRepository;
-import org.suffleport.zwloader.repository.GuestVisitRepository;
 import org.suffleport.zwloader.repository.PersonnelRepository;
 import org.suffleport.zwloader.repository.PositionRepository;
 import org.suffleport.zwloader.repository.UserRepository;
+import org.suffleport.zwloader.security.Actor;
+import org.suffleport.zwloader.security.CurrentUserService;
 import org.suffleport.zwloader.validation.ValidationRules;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,9 +30,9 @@ public class PersonnelService {
     private final PersonnelRepository personnelRepository;
     private final PositionRepository positionRepository;
     private final CardRepository cardRepository;
-    private final EventRepository eventRepository;
-    private final GuestVisitRepository guestVisitRepository;
     private final UserRepository userRepository;
+    private final AuditService auditService;
+    private final CurrentUserService currentUserService;
 
     @Transactional
     public Personnel create(String lastName,
@@ -74,6 +75,7 @@ public class PersonnelService {
                             String phone,
                             String photoBase64) {
         Personnel p = getOrThrow(id);
+        Map<String, Object> before = personnelSnapshot(p);
         if (lastName != null) {
             p.setLastName(ValidationRules.requireHumanName(lastName, "Фамилия", 100));
         }
@@ -89,7 +91,10 @@ public class PersonnelService {
             p.setPosition(pos);
         }
         if (photoBase64 != null) p.setPhotoBase64(ValidationRules.normalizePhotoBase64(photoBase64));
-        return personnelRepository.save(p);
+        Personnel saved = personnelRepository.save(p);
+        auditService.record("Personnel", saved.getId().toString(), "UPDATE",
+                before, personnelSnapshot(saved), auditActor(), "Изменение карточки сотрудника");
+        return saved;
     }
 
     @Transactional
@@ -104,29 +109,24 @@ public class PersonnelService {
     @Transactional
     public void delete(UUID id) {
         Personnel person = getOrThrow(id);
+        if (person.isArchived()) {
+            return;
+        }
 
-        // 1) Detach user accounts from this personnel (person_id is nullable in DB)
+
         userRepository.clearPersonId(id);
 
-        // 2) Guest visits: host_person_id is NOT NULL, so we must remove dependent visits
-        guestVisitRepository.deleteByHost_Id(id);
+  
+        cardRepository.deactivateByPersonId(id);
 
-        // 3) Events may reference this person and/or their cards; detach both before card deletion
-        List<String> cardUids = cardRepository.findByPerson_Id(id)
-                .stream()
-                .map(c -> c.getUid())
-                .collect(Collectors.toList());
+        // Снимок «до» нужно снять до проставления archived_at,
+        // иначе в аудите получатся два одинаковых состояния.
+        Map<String, Object> beforeArchive = personnelSnapshot(person);
 
-        if (!cardUids.isEmpty()) {
-            eventRepository.clearCardByUids(cardUids);
-        }
-        eventRepository.clearPerson(id);
-
-        // 4) Cards: remove explicitly after detaching events to avoid FK violations
-        cardRepository.deleteByPerson_Id(id);
-
-        // 5) Finally delete personnel
-        personnelRepository.delete(person);
+        person.setArchivedAt(OffsetDateTime.now());
+        Personnel saved = personnelRepository.save(person);
+        auditService.record("Personnel", id.toString(), "ARCHIVE",
+                beforeArchive, personnelSnapshot(saved), auditActor(), "Сотрудник переведён в архив");
     }
 
     // Поисковые методы
@@ -185,7 +185,7 @@ public class PersonnelService {
     public Page<Personnel> listPage(String query, Pageable pageable) {
         String safeQuery = query == null ? null : query.trim();
         if (safeQuery == null || safeQuery.isBlank()) {
-            return personnelRepository.findAll(pageable);
+            return personnelRepository.findByArchivedAtIsNull(pageable);
         }
         return personnelRepository.search(safeQuery, pageable);
     }
@@ -194,11 +194,34 @@ public class PersonnelService {
     public List<Personnel> listAll(String query) {
         String safeQuery = query == null ? null : query.trim();
         if (safeQuery == null || safeQuery.isBlank()) {
-            return personnelRepository.findAll();
+            return personnelRepository.findByArchivedAtIsNull();
         }
         return personnelRepository.search(safeQuery, Pageable.unpaged()).getContent();
     }
 
     @Transactional(readOnly = true)
-    public List<Personnel> listAll() { return personnelRepository.findAll(); }
+    public List<Personnel> listAll() { return personnelRepository.findByArchivedAtIsNull(); }
+
+    /**
+     * Снимок полей сотрудника для журнала аудита.
+     * Фото и base64 сюда не попадают: в журнале они не нужны.
+     */
+    private Map<String, Object> personnelSnapshot(Personnel person) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("fullName", person.getFullName());
+        map.put("lastName", person.getLastName());
+        map.put("firstName", person.getFirstName());
+        map.put("middleName", person.getMiddleName());
+        map.put("dateOfBirth", person.getDateOfBirth() != null ? person.getDateOfBirth().toString() : null);
+        map.put("phone", person.getPhone());
+        map.put("position", person.getPosition() != null ? person.getPosition().getName() : null);
+        map.put("archivedAt", person.getArchivedAt() != null ? person.getArchivedAt().toString() : null);
+        return map;
+    }
+
+    private String auditActor() {
+        return currentUserService.currentOrEmpty()
+                .map(Actor::email)
+                .orElse("system");
+    }
 }

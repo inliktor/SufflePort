@@ -35,6 +35,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation "com.google.zxing:core:3.5.3"
     implementation "com.google.zxing:javase:3.5.3"
+    // Разбор и генерация xlsx для импорта сотрудников
+    implementation 'org.apache.poi:poi-ooxml:5.3.0'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 //    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
@@ -48,4 +50,21 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+/**
+ * Явное скачивание зависимостей для docker-слоя.
+ *
+ * Встроенная задача dependencies не падает на неразрешённых артефактах:
+ * она печатает FAILED в дереве и завершается успешно. Из-за этого сборка образа
+ * падала позже, на compileJava, хотя сетевую проблему можно было увидеть раньше.
+ */
+tasks.register('downloadDependencies') {
+    description = 'Скачивает все зависимости и падает, если что-то не разрешилось'
+    group = 'build'
+    doLast {
+        configurations.compileClasspath.resolve()
+        configurations.runtimeClasspath.resolve()
+        configurations.testCompileClasspath.resolve()
+    }
 }
