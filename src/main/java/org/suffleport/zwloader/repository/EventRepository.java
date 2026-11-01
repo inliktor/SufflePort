@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.suffleport.zwloader.domain.Source;
 import org.springframework.data.domain.Page;
@@ -16,59 +17,80 @@ import org.springframework.data.domain.Pageable;
 import org.suffleport.zwloader.domain.Direction;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
+    @Override
+    @EntityGraph(attributePaths = {"person", "card", "device"})
+    Optional<Event> findById(Long id);
+
     // Все события одного сотрудника
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     List<Event> findByPerson_Id(UUID personId);
 
     // События по устройству за дату/период
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     List<Event> findByDevice_IdAndCreatedAtBetween(String deviceId, OffsetDateTime start, OffsetDateTime end);
 
+    boolean existsByDevice_Id(String deviceId);
+
     // Все события по карте
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     List<Event> findByCard_Uid(String cardUid);
 
     // Поиск событий по source/direction
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     List<Event> findBySource(Source source);
 
     // События за последние n дней
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     List<Event> findByCreatedAtAfter(OffsetDateTime date);
 
     // События между датами
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     List<Event> findByCreatedAtBetween(OffsetDateTime start, OffsetDateTime end);
 
     // Новые методы для получения последнего события
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     Event findTop1ByCard_UidOrderByCreatedAtDesc(String cardUid);
+
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     Event findTop1ByFaceNameOrderByCreatedAtDesc(String faceName);
+
+    @EntityGraph(attributePaths = {"person", "card", "device"})
     Event findTop1ByDevice_IdOrderByCreatedAtDesc(String deviceId);
 
-        @EntityGraph(attributePaths = {"person", "card", "device"})
-        @Query("""
-                        select e from Event e
-                        where (:source is null or e.source = :source)
-                            and (:direction is null or e.direction = :direction)
-                        """)
-        Page<Event> findBySourceAndDirection(@Param("source") Source source,
-                                                                                 @Param("direction") Direction direction,
-                                                                                 Pageable pageable);
+    @EntityGraph(attributePaths = {"person", "card", "device"})
+    @Query("""
+            select e from Event e
+            where (:source is null or e.source = :source)
+                and (:direction is null or e.direction = :direction)
+            """)
+    Page<Event> findBySourceAndDirection(@Param("source") Source source,
+                                         @Param("direction") Direction direction,
+                                         Pageable pageable);
 
-        @EntityGraph(attributePaths = {"person", "card", "device"})
-        @Query("""
-                        select e from Event e
-                        where (:source is null or e.source = :source)
-                            and (:direction is null or e.direction = :direction)
-                            and e.createdAt >= :start
-                            and e.createdAt < :end
-                        """)
-        Page<Event> findBySourceAndDirectionAndCreatedAtBetween(@Param("source") Source source,
-                                                                                                                         @Param("direction") Direction direction,
-                                                                                                                         @Param("start") OffsetDateTime start,
-                                                                                                                         @Param("end") OffsetDateTime end,
-                                                                                                                         Pageable pageable);
+    @EntityGraph(attributePaths = {"person", "card", "device"})
+    @Query("""
+            select e from Event e
+            where (:source is null or e.source = :source)
+                and (:direction is null or e.direction = :direction)
+                and e.createdAt >= :start
+                and e.createdAt < :end
+            """)
+    Page<Event> findBySourceAndDirectionAndCreatedAtBetween(@Param("source") Source source,
+                                                            @Param("direction") Direction direction,
+                                                            @Param("start") OffsetDateTime start,
+                                                            @Param("end") OffsetDateTime end,
+                                                            Pageable pageable);
 
-        @Override
-        @EntityGraph(attributePaths = {"person", "card", "device"})
-        Page<Event> findAll(Pageable pageable);
+    @Override
+    @EntityGraph(attributePaths = {"person", "card", "device"})
+    Page<Event> findAll(Pageable pageable);
 
-        @EntityGraph(attributePaths = {"person", "card", "device"})
-        Page<Event> findByCreatedAtAfter(OffsetDateTime date, Pageable pageable);
+    @Override
+    @EntityGraph(attributePaths = {"person", "card", "device"})
+    List<Event> findAll();
+
+    @EntityGraph(attributePaths = {"person", "card", "device"})
+    Page<Event> findByCreatedAtAfter(OffsetDateTime date, Pageable pageable);
 
     @Modifying
     @Query("update Event e set e.person = null where e.person.id = :personId")

@@ -75,26 +75,29 @@ public class HomeassistanController {
     @PostMapping(value = "/nfc/toggle", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> nfcToggle(@RequestParam(value = "uid", required = false) String uid,
                                             @RequestParam(value = "p_uid", required = false) String legacyUid,
-                                            @RequestParam(value = "device", required = false) String device) {
+                                            @RequestParam(value = "device", required = false) String device,
+                                            @RequestParam(value = "device_id", required = false) String deviceId) {
         String resolvedUid = firstNonBlank(uid, legacyUid);
-        Event e = eventService.createNfcToggleEvent(resolvedUid, device);
+        Event e = eventService.createNfcToggleEvent(resolvedUid, firstNonBlank(device, deviceId));
         return ResponseEntity.ok(e.getDirection().name());
     }
 
     @GetMapping(value = "/nfc/toggle", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> nfcToggleGet(@RequestParam(value = "uid", required = false) String uid,
                                                @RequestParam(value = "p_uid", required = false) String legacyUid,
-                                               @RequestParam(value = "device", required = false) String device) {
+                                               @RequestParam(value = "device", required = false) String device,
+                                               @RequestParam(value = "device_id", required = false) String deviceId) {
         String resolvedUid = firstNonBlank(uid, legacyUid);
-        Event e = eventService.createNfcToggleEvent(resolvedUid, device);
+        Event e = eventService.createNfcToggleEvent(resolvedUid, firstNonBlank(device, deviceId));
         return ResponseEntity.ok(e.getDirection().name());
     }
 
     /** reporter_log_face_toggle: вернуть JSON { direction: "IN"|"OUT"|"NONE" } */
     @PostMapping(value = "/face/toggle", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, String> faceToggle(@RequestParam("face") String faceName,
-                                          @RequestParam(value = "device", required = false) String device) {
-        Event e = eventService.createFaceToggleEvent(faceName, device);
+                                          @RequestParam(value = "device", required = false) String device,
+                                          @RequestParam(value = "device_id", required = false) String deviceId) {
+        Event e = eventService.createFaceToggleEvent(faceName, firstNonBlank(device, deviceId));
         return Map.of("direction", e.getDirection() != null ? e.getDirection().name() : "NONE");
     }
 
@@ -109,9 +112,10 @@ public class HomeassistanController {
     @PostMapping(value = "/security-alert", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> securityAlert(@RequestParam("uid") String uidOrFace,
                                              @RequestParam(value = "device", required = false) String device,
+                                             @RequestParam(value = "device_id", required = false) String deviceId,
                                              @RequestParam(value = "source", defaultValue = "NFC") Source source,
                                              @RequestParam(value = "reason", required = false) String reason) {
-        Event e = eventService.createSecurityAlert(uidOrFace, device, source, reason);
+        Event e = eventService.createSecurityAlert(uidOrFace, firstNonBlank(device, deviceId), source, reason);
         return Map.of("status", "ok", "eventId", e.getId());
     }
 

@@ -10,8 +10,9 @@ RUN chmod +x gradlew
 # Pre-download all dependencies with BuildKit cache mount.
 # /root/.gradle is mounted as a persistent host cache — survives image rebuilds.
 # This layer is invalidated only if build.gradle / settings.gradle change.
+# downloadDependencies (см. build.gradle) падает сразу, если артефакт недоступен.
 RUN --mount=type=cache,target=/root/.gradle \
-    ./gradlew dependencies --no-daemon --quiet
+    ./gradlew downloadDependencies --no-daemon
 
 # Now copy source and build. The cache mount keeps downloaded artifacts intact
 # so Gradle only recompiles changed sources on subsequent builds.

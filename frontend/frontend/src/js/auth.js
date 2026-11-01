@@ -25,6 +25,7 @@ function showMessage(text, type = 'error') {
 
 function showToast(message, type = 'info') {
   const container = $('#toast-container');
+  if (!container) return;
   const toast = document.createElement('div');
   
   const colors = {
@@ -42,6 +43,21 @@ function showToast(message, type = 'info') {
     toast.classList.add('opacity-0', 'translate-x-full');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+async function readErrorMessage(response, fallback) {
+  const contentType = response.headers.get('content-type') || '';
+  try {
+    if (contentType.includes('application/json')) {
+      const body = await response.json();
+      return body?.message || fallback;
+    }
+
+    const text = await response.text();
+    return text || fallback;
+  } catch (_) {
+    return fallback;
+  }
 }
 
 // Tab switching
@@ -93,28 +109,17 @@ $('#login-form').addEventListener('submit', async (e) => {
     });
     
     if (!response.ok) {
-      const error = await response.text();
+      const error = await readErrorMessage(response, 'Неверные учетные данные');
       throw new Error(error || 'Неверные учетные данные');
     }
     
     const data = await response.json();
-    
-    console.log('=== LOGIN RESPONSE DEBUG ===');
-    console.log('Full response:', data);
-    console.log('data.roleId:', data.roleId, 'type:', typeof data.roleId);
-    console.log('data.isAdmin:', data.isAdmin, 'type:', typeof data.isAdmin);
-    console.log('data.roleName:', data.roleName);
     
     // Сохраняем данные пользователя
     localStorage.setItem('username', data.username);
     localStorage.setItem('email', data.email);
     localStorage.setItem('roleId', String(data.roleId));
     localStorage.setItem('isAdmin', String(data.isAdmin));
-    
-    console.log('=== LOCALSTORAGE AFTER SAVE ===');
-    console.log('roleId in storage:', localStorage.getItem('roleId'));
-    console.log('isAdmin in storage:', localStorage.getItem('isAdmin'));
-    console.log('isAdmin === "true"?', localStorage.getItem('isAdmin') === 'true');
     
     showToast('Вход выполнен успешно!', 'success');
     
@@ -169,11 +174,11 @@ $('#register-form').addEventListener('submit', async (e) => {
     });
     
     if (!response.ok) {
-      const error = await response.text();
+      const error = await readErrorMessage(response, 'Ошибка регистрации');
       throw new Error(error || 'Ошибка регистрации');
     }
-    
-    const data = await response.json();
+
+    await response.json();
     
     showMessage('Регистрация успешна! Выполняется вход...', 'success');
     
@@ -195,12 +200,6 @@ $('#register-form').addEventListener('submit', async (e) => {
         localStorage.setItem('email', loginData.email);
         localStorage.setItem('roleId', String(loginData.roleId));
         localStorage.setItem('isAdmin', String(loginData.isAdmin));
-        
-        console.log('Auto-login after registration:', {
-          username: loginData.username,
-          roleId: loginData.roleId,
-          isAdmin: loginData.isAdmin
-        });
         
         window.location.href = '/';
       }

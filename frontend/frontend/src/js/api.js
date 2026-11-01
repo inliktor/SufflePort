@@ -18,6 +18,28 @@ function buildQuery(params = {}) {
   return qs ? `?${qs}` : '';
 }
 
+async function parseErrorMessage(response) {
+  const fallback = `HTTP ${response.status}`;
+  const contentType = response.headers.get('content-type') || '';
+
+  try {
+    if (contentType.includes('application/json')) {
+      const body = await response.json();
+      let message = body?.message || fallback;
+      if (body?.errors && typeof body.errors === 'object') {
+        const firstError = Object.values(body.errors).find(Boolean);
+        if (firstError) message = `${message}: ${firstError}`;
+      }
+      return message;
+    }
+
+    const text = await response.text();
+    return text || fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
 async function request(path, opts = {}) {
   const { retries = 2, ...fetchOpts } = opts;
   const headers = fetchOpts.body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
@@ -49,9 +71,7 @@ async function request(path, opts = {}) {
   // Если 401 или 403 - проверяем был ли пользователь залогинен
   if (r.status === 401 || r.status === 403) {
     const wasLoggedIn = localStorage.getItem('username');
-    console.warn('API request returned', r.status, 'for path:', path);
     if (wasLoggedIn) {
-      console.log('User was logged in, clearing session and redirecting');
       localStorage.clear();
       window.location.href = '/login.html';
     }
@@ -59,21 +79,7 @@ async function request(path, opts = {}) {
   }
   
   if (!r.ok) {
-    let message = 'HTTP ' + r.status;
-    try {
-      const ct = r.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
-        const body = await r.json();
-        if (body?.message) message = body.message;
-        if (body?.errors && typeof body.errors === 'object') {
-          const firstError = Object.values(body.errors).find(Boolean);
-          if (firstError) {
-            message = `${message}: ${firstError}`;
-          }
-        }
-      }
-    } catch (_) {}
-    throw new Error(message);
+    throw new Error(await parseErrorMessage(r));
   }
   const ct = r.headers.get('content-type') || '';
   if (ct.includes('application/json')) return r.json();
@@ -129,8 +135,8 @@ export const Api = {
   eventsManualCreate: (data) => request('/events/manual', { method: 'POST', body: JSON.stringify(data) }),
 
   // NFC and Face toggles
-  nfcToggle: (uid, device) => request(`/ha/nfc/toggle?uid=${encodeURIComponent(uid)}&device=${encodeURIComponent(device)}`, { method: 'POST' }),
-  faceToggle: (face, device) => request(`/ha/face/toggle?face=${encodeURIComponent(face)}&device=${encodeURIComponent(device)}`, { method: 'POST' }),
+  nfcToggle: (uid, device) => request(`/ha/nfc/toggle${buildQuery({ uid, device })}`, { method: 'POST' }),
+  faceToggle: (face, device) => request(`/ha/face/toggle${buildQuery({ face, device })}`, { method: 'POST' }),
 
   // Devices
   devicesList: (params = {}) => request(`/devices${buildQuery(params)}`),
@@ -178,6 +184,59 @@ export const Api = {
   guestVisitQrUrl: (id) => `${BASE}/guest-visits/${encodeURIComponent(id)}/qr`,
   guestVisitCheckinByCode: (code) => request('/guest-visits/checkin-by-code', { method: 'POST', body: JSON.stringify({ code }) }),
 
+  // Visits requests (заявки на посещение)
+  visitRequestsMine: () => request('/visit-requests/mine'),
+  visitRequestsQueue: () => request('/visit-requests/queue'),
+  visitRequestsAll: (status) => request(`/visit-requests/all${buildQuery({ status })}`),
+  visitRequestsExpected: (date) => request(`/visit-requests/expected${buildQuery({ date })}`),
+  visitRequestGet: (id) => request(`/visit-requests/${id}`),
+  visitRequestHistory: (id) => request(`/visit-requests/${id}/history`),
+  visitRequestCreate: (data) => request('/visit-requests', { method: 'POST', body: JSON.stringify(data) }),
+  visitRequestUpdatePlan: (id, data) => request(`/visit-requests/${id}/plan`, {
+    method: 'PUT', body: JSON.stringify(data)
+  }),
+  visitRequestSubmit: (id, comment) => request(`/visit-requests/${id}/submit`, {
+    method: 'POST', body: JSON.stringify({ comment: comment || null })
+  }),  visitRequestApprove: (id, comment) => request(`/visit-requests/${id}/approve`, {
+    method: 'POST', body: JSON.stringify({ comment: comment || null })
+  }),
+  visitRequestReject: (id, comment) => request(`/visit-requests/${id}/reject`, {
+    method: 'POST', body: JSON.stringify({ comment })
+  }),
+  visitRequestCancel: (id, comment) => request(`/visit-requests/${id}/cancel`, {
+    method: 'POST', body: JSON.stringify({ comment: comment || null })
+  }),
+
+  // Notifications
+  notifications: () => request('/notifications'),
+  notificationsUnread: () => request('/notifications/unread-count'),
+  notificationRead: (id) => request(`/notifications/${id}/read`, { method: 'POST' }),
+  notificationsReadAll: () => request('/notifications/read-all', { method: 'POST' }),
+
+  // Audit log (только администратор)
+  auditLog: (params = {}) => request(`/audit${buildQuery(params)}`),
+
+  // Импорт сотрудников из Excel (только администратор)
+  personnelImportTemplateUrl: () => `${BASE}/personnel-import/template`,
+  personnelImportPreview: async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch(BASE + '/personnel-import/preview', {
+      method: 'POST', body: fd, credentials: 'include', cache: 'no-store'
+    });
+    if (!r.ok) throw new Error(await parseErrorMessage(r));
+    return r.json();
+  },
+  personnelImportApply: async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch(BASE + '/personnel-import/apply', {
+      method: 'POST', body: fd, credentials: 'include', cache: 'no-store'
+    });
+    if (!r.ok) throw new Error(await parseErrorMessage(r));
+    return r.json();
+  },
+
   // Card operations
   cardActivate: (uid) => request(`/cards/${uid}/activate`, { method: 'POST' }),
   cardDeactivate: (uid) => request(`/cards/${uid}/deactivate`, { method: 'POST' }),
@@ -197,7 +256,7 @@ export const Api = {
       credentials: 'include',
       cache: 'no-store'
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!r.ok) throw new Error(await parseErrorMessage(r));
     return r.json();
   }
 };

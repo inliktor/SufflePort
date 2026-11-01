@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.suffleport.zwloader.domain.Device;
 import org.suffleport.zwloader.repository.CameraRepository;
 import org.suffleport.zwloader.repository.DeviceRepository;
+import org.suffleport.zwloader.repository.EventRepository;
 import org.suffleport.zwloader.validation.ValidationRules;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final CameraRepository cameraRepository;
+    private final EventRepository eventRepository;
 
     @Transactional
     public Device create(String id, String kind, String location) {
@@ -51,6 +53,9 @@ public class DeviceService {
     public void delete(String id) {
         if (cameraRepository.existsByDevice_Id(id)) {
             throw new IllegalStateException("Нельзя удалить устройство: к нему привязаны камеры");
+        }
+        if (eventRepository.existsByDevice_Id(id)) {
+            throw new IllegalStateException("Нельзя удалить устройство: по нему уже есть события прохода");
         }
         Device d = getOrThrow(id);
         deviceRepository.delete(d);

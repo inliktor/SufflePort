@@ -1,8 +1,10 @@
 package org.suffleport.zwloader.repository;
 import org.suffleport.zwloader.domain.Card;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.suffleport.zwloader.domain.Personnel;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,5 +36,9 @@ public interface CardRepository extends JpaRepository<Card, String> {
 
     // Удалить все карты сотрудника (удаление по person_id)
     void deleteByPerson_Id(UUID personId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Card c set c.active = false where c.person.id = :personId")
+    int deactivateByPersonId(@Param("personId") UUID personId);
 
 }

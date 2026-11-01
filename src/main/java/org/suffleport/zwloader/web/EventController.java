@@ -1,7 +1,9 @@
 package org.suffleport.zwloader.web;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.suffleport.zwloader.service.HaIntegrationAuthService;
 
 import java.time.OffsetDateTime;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -100,12 +103,13 @@ public class EventController {
                                              @RequestParam("uid") String uid,
                                              @RequestParam(value = "source", required = false) String source,
                                              @RequestParam(value = "device_id", required = false) String deviceId,
+                                             @RequestParam(value = "device", required = false) String device,
                                              @RequestParam(value = "grace_seconds", required = false) Integer graceSeconds) {
         haIntegrationAuthService.requireValidToken(token);
         HaLogEventRequest request = new HaLogEventRequest();
         request.setUid(uid);
         request.setSource(source);
-        request.setDeviceId(deviceId);
+        request.setDeviceId(firstNonBlank(deviceId, device));
         request.setGraceSeconds(graceSeconds);
         return handleHaToggleEvent(request);
     }
@@ -140,16 +144,22 @@ public class EventController {
 
     private Map<String, Object> handleHaToggleEvent(HaLogEventRequest request) {
         Source source = parseSource(request.getSource());
+        if (source == Source.MANUAL) {
+            throw new IllegalArgumentException("MANUAL-события создаются через /api/events/manual");
+        }
         Event event = source == Source.FACE
                 ? eventService.createFaceToggleEvent(request.getUid(), request.getDeviceId())
                 : eventService.createNfcToggleEvent(request.getUid(), request.getDeviceId());
 
-        return Map.of(
-                "status", "ok",
-                "direction", event.getDirection().name(),
-                "eventId", event.getId(),
-                "source", source.name()
-        );
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", "ok");
+        response.put("direction", event.getDirection().name());
+        response.put("eventId", event.getId());
+        response.put("source", source.name());
+        if (event.getDevice() != null) {
+            response.put("deviceId", event.getDevice().getId());
+        }
+        return response;
     }
 
     private Source parseSource(String rawSource) {
@@ -181,13 +191,16 @@ public class EventController {
 
     @Data
     public static class HaLogEventRequest {
+        @NotBlank(message = "Идентификатор карты или лица обязателен")
         @Size(max = 200, message = "Идентификатор карты или лица не может быть длиннее 200 символов")
+        @JsonAlias({"p_uid", "face", "face_name"})
         private String uid;
 
         private String source;
 
         @Size(max = 100, message = "ID устройства не может быть длиннее 100 символов")
         @JsonProperty("device_id")
+        @JsonAlias({"deviceId", "device"})
         private String deviceId;
 
         @JsonProperty("grace_seconds")
@@ -209,6 +222,18 @@ public class EventController {
         private String reason;
 
         private EventMeta meta;
+    }
+
+    private String firstNonBlank(String... candidates) {
+        if (candidates == null) {
+            return null;
+        }
+        for (String candidate : candidates) {
+            if (candidate != null && !candidate.isBlank()) {
+                return candidate;
+            }
+        }
+        return null;
     }
 }
 

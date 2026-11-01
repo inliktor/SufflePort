@@ -7,6 +7,8 @@ if (!_authUsername) {
 
 import { Api } from './api.js';
 import { showToast, formatDateTime, formatDate, escapeHtml } from './utils.js';
+import { initVisitRequests, refreshRequestBadges, startNotificationWatcher } from './requests.js';
+import { initPersonnelImport } from './personnel-import.js';
 
 // Global error handlers
 window.addEventListener('error', (evt) => {
@@ -42,6 +44,23 @@ let editingPersonnelOriginal = null;
 let editingPersonnelPhotoBase64 = null;
 let currentSection = 'dashboard';
 let searchDebounceTimer = null;
+
+const DISABLED_SECTIONS = new Set(['faces', 'integrations']);
+
+const SOURCE_LABELS = {
+  NFC: 'NFC',
+  FACE: 'Лицо',
+  MANUAL: 'Вручную'
+};
+
+const DEVICE_KIND_LABELS = {
+  NFC_READER: 'NFC Reader',
+  CAMERA: 'Камера',
+  TURNSTILE: 'Турникет',
+  DOOR_LOCK: 'Электрозамок',
+  BARRIER: 'Шлагбаум',
+  EVENT_SOURCE: 'Источник события'
+};
 
 function defaultPageSize(section) {
   const mobile = window.innerWidth <= 767;
@@ -389,6 +408,8 @@ function toggleMobileMenu(show) {
 }
 
 function navigateTo(sectionId) {
+  if (DISABLED_SECTIONS.has(sectionId)) return;
+
   // Update desktop nav active state
   document.querySelectorAll('.nav-item').forEach(nav => {
     nav.classList.toggle('active', nav.dataset.section === sectionId);
@@ -410,14 +431,22 @@ function navigateTo(sectionId) {
 
   // On desktop, refreshActiveSection is a no-op; load chart-based sections explicitly
   if (window.innerWidth > 768 && sectionId === 'stats') loadStats();
+  // Раздел заявок сам решает, что загрузить, в зависимости от роли пользователя
+  if (sectionId === 'requests') initVisitRequests();
 
   if (window.innerWidth < 768) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
+// Нужен модулю заявок (колокольчик в шапке открывает раздел)
+window.navigateTo = navigateTo;
+// После импорта сотрудников из Excel список в разделе обновляется
+window.loadPersonnel = loadPersonnel;
 function initNavigation() {
   document.querySelectorAll('[data-section]').forEach(item => {
+    if (DISABLED_SECTIONS.has(item.dataset.section) || item.getAttribute('aria-disabled') === 'true') return;
+
     item.addEventListener('click', (e) => {
       e.preventDefault();
       navigateTo(item.dataset.section);
@@ -435,6 +464,7 @@ function initNavigation() {
   document.querySelectorAll('.nav-link[data-section]').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
+      if (DISABLED_SECTIONS.has(link.dataset.section)) return;
       navigateTo(link.dataset.section);
     });
   });
@@ -453,6 +483,7 @@ function updatePageTitle(sectionId) {
     cameras:      { title: 'Камеры',                subtitle: 'Управление IP-камерами СКУД' },
     faces:        { title: 'Распознавание лиц',     subtitle: 'Биометрическая идентификация' },
     guests:       { title: 'Гости',                 subtitle: 'Управление посетителями' },
+    requests:     { title: 'Заявки на посещение',  subtitle: 'Согласование, ожидаемые гости и уведомления' },
     positions:    { title: 'Должности',             subtitle: 'Управление должностями и уровнями доступа' },
     integrations: { title: 'Интеграции',            subtitle: 'Подключение внешних систем' },
     profile:      { title: 'Профиль',               subtitle: 'Данные аккаунта и сессии' },
@@ -685,7 +716,7 @@ async function loadSectionData(sectionId) {
       await loadPersonnel();
       break;
     case 'events':
-      await loadEvents();
+      await Promise.all([loadEvents(), loadDeviceOptions()]);
       break;
     case 'devices':
       await loadDevices();
@@ -693,6 +724,9 @@ async function loadSectionData(sectionId) {
     case 'guests':
       await loadGuests();
       await loadGuestVisitsToday();
+      break;
+    case 'requests':
+      await initVisitRequests();
       break;
     case 'positions':
       await loadPositions();
@@ -731,6 +765,8 @@ function renderRecentEvents(events) {
       ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
       : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>';
     const personName = resolveEventPersonName(event);
+    const device = resolveEventDeviceLabel(event);
+    const sourceText = SOURCE_LABELS[event.source] || event.source || 'N/A';
 
     return `
       <div class="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
@@ -742,11 +778,28 @@ function renderRecentEvents(events) {
             <p class="font-medium text-slate-800 text-sm truncate">${escapeHtml(personName)}</p>
             <span class="badge ${dirClass} ml-2 flex-shrink-0">${dirText}</span>
           </div>
-          <p class="text-xs text-slate-400 mt-0.5">${formatDateTime(event.createdAt)}${event.device ? ` · ${escapeHtml(event.device.id)}` : ''}</p>
+          <p class="text-xs text-slate-400 mt-0.5 truncate">${escapeHtml(sourceText)} · ${formatDateTime(event.createdAt)} · ${escapeHtml(device.short)}</p>
         </div>
       </div>
     `;
   }).join('');
+}
+
+function resolveEventDeviceLabel(event) {
+  const device = event?.device;
+  if (!device) {
+    return { short: 'Устройство не указано', detail: '—', missing: true };
+  }
+  const kind = DEVICE_KIND_LABELS[device.kind] || device.kind || 'Устройство';
+  const id = device.id || '—';
+  const location = device.location && device.location !== 'Автоматически добавлено из события'
+    ? device.location
+    : '';
+  return {
+    short: location || id,
+    detail: location ? `${id} · ${kind}` : kind,
+    missing: false
+  };
 }
 
 function resolveEventPersonName(event) {
@@ -839,7 +892,7 @@ function renderPersonnelTable(personnel) {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
               </svg>
             </button>
-            <button class="btn-icon text-red-600 hover:bg-red-50 delete-personnel-btn" data-person-id="${escapeHtml(person.id)}" title="Удалить">
+            <button class="btn-icon text-red-600 hover:bg-red-50 delete-personnel-btn" data-person-id="${escapeHtml(person.id)}" title="Уволить">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
               </svg>
@@ -859,10 +912,10 @@ function renderPersonnelTable(personnel) {
 }
 
 function deletePerson(personId) {
-  if (!confirm('Удалить этого сотрудника?')) return;
+  if (!confirm('Уволить сотрудника? Он исчезнет из активного списка, его карты будут отключены, а история проходов сохранится.')) return;
   Api.personnelDelete(personId)
     .then(() => {
-      showToast('Сотрудник удалён', 'success');
+      showToast('Сотрудник уволен и перенесён в архив', 'success');
       loadPersonnel();
     })
     .catch(error => {
@@ -1149,6 +1202,10 @@ function initEditPersonnelModal() {
 
 // ==================== Events ====================
 async function loadEvents() {
+  const tbody = document.getElementById('events-table-body');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-400 text-sm">Загрузка журнала...</td></tr>';
+  }
   try {
     const response = await Api.eventsList({
       page: listState.events.page,
@@ -1170,6 +1227,11 @@ async function loadEvents() {
     });
   } catch (error) {
     console.error('Events load error:', error);
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-red-500 text-sm">Не удалось загрузить события</td></tr>';
+    }
+    const meta = document.getElementById('events-results-meta');
+    if (meta) meta.textContent = 'Ошибка загрузки';
     showToast('Ошибка загрузки событий', 'error');
   }
 }
@@ -1195,30 +1257,54 @@ function renderEventsTable(events) {
     const dirClass = event.direction === 'IN' ? 'badge-green' : event.direction === 'OUT' ? 'badge-blue' : 'badge-yellow';
     const dirText  = event.direction === 'IN' ? 'Вход' : event.direction === 'OUT' ? 'Выход' : event.direction || 'Неизвестно';
     const srcClass = event.source === 'NFC' ? 'badge-purple' : event.source === 'FACE' ? 'badge-blue' : 'badge-yellow';
+    const sourceText = SOURCE_LABELS[event.source] || event.source || 'N/A';
     const personName = resolveEventPersonName(event);
+    const device = resolveEventDeviceLabel(event);
+    const deviceHtml = device.missing
+      ? '<span class="badge bg-slate-100 text-slate-500">Не указано</span>'
+      : `<div class="font-medium text-slate-700">${escapeHtml(device.short)}</div><div class="text-xs text-slate-400 mt-0.5">${escapeHtml(device.detail)}</div>`;
 
     return `
       <tr class="hover:bg-slate-50 transition-colors">
         <td data-label="Дата/Время">
           <div class="font-medium text-slate-900 text-sm">${formatDateTime(event.createdAt)}</div>
           <div class="md:hidden mt-1 text-xs text-slate-500 leading-5">
-            <div>${escapeHtml(event.source || 'N/A')} · ${escapeHtml(dirText)}</div>
-            <div>${escapeHtml(event.device?.id || 'Устройство не указано')}</div>
+            <div>${escapeHtml(sourceText)} · ${escapeHtml(dirText)}</div>
+            <div>${escapeHtml(device.short)}</div>
           </div>
         </td>
         <td data-label="Сотрудник / UID">
           <div class="font-medium text-slate-800 text-sm">${escapeHtml(personName)}</div>
         </td>
         <td data-label="Источник" class="hidden md:table-cell">
-          <span class="badge ${srcClass}">${escapeHtml(event.source || 'N/A')}</span>
+          <span class="badge ${srcClass}">${escapeHtml(sourceText)}</span>
         </td>
         <td data-label="Направление">
           <span class="badge ${dirClass}">${escapeHtml(dirText)}</span>
         </td>
-        <td data-label="Устройство" class="hidden lg:table-cell text-slate-500 text-sm">${escapeHtml(event.device?.id || '—')}</td>
+        <td data-label="Устройство" class="hidden lg:table-cell text-sm">${deviceHtml}</td>
       </tr>
     `;
   }).join('');
+}
+
+function populateDeviceOptions(devices = devicesData) {
+  const datalist = document.getElementById('device-options');
+  if (!datalist) return;
+  datalist.innerHTML = (devices || [])
+    .map(device => `<option value="${escapeHtml(device.id)}" label="${escapeHtml(device.location || DEVICE_KIND_LABELS[device.kind] || device.kind || 'Устройство')}"></option>`)
+    .join('');
+}
+
+async function loadDeviceOptions() {
+  try {
+    const devices = await Api.devicesList();
+    devicesData = devices;
+    populateDeviceOptions(devices);
+  } catch (error) {
+    console.warn('Device options load failed:', error);
+    populateDeviceOptions(devicesData);
+  }
 }
 
 function initEventFilters() {
@@ -1302,11 +1388,12 @@ function renderGuestVisitsToday() {
     const hostName = resolveVisitHostName(visit);
     const period = `${formatDateTime(visit.plannedFrom)} - ${formatDateTime(visit.plannedTo)}`;
     const statusText = localizeVisitStatus(visit.status || 'PLANNED');
+    const statusColor = visitStatusBadgeClass(visit.status);
     return `
       <tr class="hover:bg-slate-50 transition-colors">
         <td data-label="Гость" class="font-medium text-slate-900 text-sm">${escapeHtml(guestName)}</td>
         <td data-label="Хост" class="hidden md:table-cell text-slate-600 text-sm">${escapeHtml(hostName)}</td>
-        <td data-label="Статус"><span class="badge bg-slate-100 text-slate-700">${escapeHtml(statusText)}</span></td>
+        <td data-label="Статус"><span class="badge ${statusColor}">${escapeHtml(statusText)}</span></td>
         <td data-label="Период" class="hidden lg:table-cell text-slate-500 text-xs">${escapeHtml(period)}</td>
         <td class="text-right table-actions">
           <div class="flex items-center justify-end gap-1">
@@ -1394,36 +1481,40 @@ function renderGuestCheckinInfo(visit, sourceLabel = 'manual') {
     || [visit?.host?.lastName, visit?.host?.firstName].filter(Boolean).join(' ')
     || '—';
   const period = visit?.plannedFrom && visit?.plannedTo
-    ? `${formatDateTime(visit.plannedFrom)} - ${formatDateTime(visit.plannedTo)}`
+    ? `${formatDateTime(visit.plannedFrom)} – ${formatDateTime(visit.plannedTo)}`
     : '—';
+  const isActive = String(visit?.status || '').toUpperCase() === 'ACTIVE';
+  const actionLabel = isActive ? 'Гость вошёл' : 'Гость покинул здание';
   const sourceText = sourceLabel === 'scanner' ? 'QR-сканер' : 'ручной ввод';
+  const statusColor = visitStatusBadgeClass(visit?.status);
+  const reasonHtml = visit?.reason
+    ? `<div>Причина: <span class="font-medium">${escapeHtml(visit.reason)}</span></div>`
+    : '';
 
   box.classList.remove('hidden');
   box.innerHTML = `
-    <div class="font-semibold mb-1">Check-in выполнен (${escapeHtml(sourceText)})</div>
+    <div class="font-semibold mb-1">${escapeHtml(actionLabel)} (${escapeHtml(sourceText)})</div>
     <div>Гость: <span class="font-medium">${escapeHtml(guestName)}</span></div>
     <div>Хост: <span class="font-medium">${escapeHtml(hostName)}</span></div>
     <div>Период: ${escapeHtml(period)}</div>
-    <div>Статус: <span class="font-medium">${escapeHtml(localizeVisitStatus(visit?.status || 'ACTIVE'))}</span></div>
+    <div>Статус: <span class="badge ${statusColor}">${escapeHtml(localizeVisitStatus(visit?.status || 'ACTIVE'))}</span></div>
+    ${reasonHtml}
   `;
 }
 
 async function performGuestCheckinByCode(code, sourceLabel = 'manual') {
   try {
-    const result = await Api.guestVisitCheckinByCode(code);
+    // Если QR содержит полный URL (http/https), извлекаем параметр code=
+    const cleanCode = extractVisitCodeFromRaw(code);
+    const result = await Api.guestVisitCheckinByCode(cleanCode);
+    const visit = result?.visit || result;
+    if (result?.visitStatus && visit) visit.status = result.visitStatus;
     document.getElementById('guest-checkin-code').value = '';
-
-    let visit = null;
-    if (result?.visitId != null) {
-      try {
-        visit = await Api.guestVisitGet(result.visitId);
-      } catch (_) {
-        // keep lightweight fallback if detail endpoint is temporarily unavailable
-      }
-    }
-
-    renderGuestCheckinInfo(visit || { status: result?.visitStatus || 'ACTIVE' }, sourceLabel);
-    showToast('Check-in выполнен', 'success');
+    renderGuestCheckinInfo(visit, sourceLabel);
+    const toastMsg = String(visit?.status || '').toUpperCase() === 'ACTIVE'
+      ? 'Гость вошёл'
+      : 'Гость покинул здание';
+    showToast(toastMsg, 'success');
     await loadGuestVisitsToday();
   } catch (error) {
     showToast(error.message || 'Check-in не выполнен', 'error');
@@ -1488,9 +1579,10 @@ async function startGuestQrScanner() {
           const raw = (codes[0].rawValue || '').trim();
           if (raw) {
             guestQrScanLock = true;
-            document.getElementById('guest-checkin-code').value = raw;
+            const cleanCode = extractVisitCodeFromRaw(raw);
+            document.getElementById('guest-checkin-code').value = cleanCode;
             await stopGuestQrScanner();
-            await performGuestCheckinByCode(raw, 'scanner');
+            await performGuestCheckinByCode(cleanCode, 'scanner');
             return;
           }
         }
@@ -1526,8 +1618,9 @@ async function stopGuestQrScanner() {
 }
 
 window.onQrScanned = async function (code) {
-  const value = (code || '').trim();
-  if (!value) return;
+  const raw = (code || '').trim();
+  if (!raw) return;
+  const value = extractVisitCodeFromRaw(raw);
   document.getElementById('guest-checkin-code').value = value;
   await performGuestCheckinByCode(value, 'scanner');
 };
@@ -1552,6 +1645,7 @@ async function loadDevices() {
     devicesData = devices;
     renderDevicesGrid(devices);
     populateCameraDeviceSelect(devices);
+    populateDeviceOptions(devices);
   } catch (error) {
     console.error('Devices load error:', error);
     showToast('Ошибка загрузки устройств', 'error');
@@ -1567,14 +1661,6 @@ function renderDevicesGrid(devices) {
     return;
   }
 
-  const kindLabels = {
-    NFC_READER: 'NFC Reader',
-    CAMERA: 'Камера',
-    TURNSTILE: 'Турникет',
-    DOOR_LOCK: 'Электрозамок',
-    BARRIER: 'Шлагбаум'
-  };
-
   const kindIcons = {
     NFC_READER: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>',
     CAMERA: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>',
@@ -1583,7 +1669,7 @@ function renderDevicesGrid(devices) {
 
   grid.innerHTML = devices.map(device => {
     const icon = kindIcons[device.kind] || kindIcons.DEFAULT;
-    const label = kindLabels[device.kind] || device.kind || 'Устройство';
+    const label = DEVICE_KIND_LABELS[device.kind] || device.kind || 'Устройство';
 
     return `
       <div class="device-card">
@@ -1669,6 +1755,13 @@ function initEditDeviceModal() {
 }
 
 // ==================== Cameras ====================
+const LOCAL_GO2RTC_CAMERA = {
+  id: 'webcam',
+  name: 'USB веб-камера',
+  rtspUrl: 'rtsp://go2rtc:8554/webcam',
+  location: 'Локальная веб-камера'
+};
+
 async function loadCameras() {
   try {
     const cameras = await Api.camerasList();
@@ -1678,6 +1771,17 @@ async function loadCameras() {
     console.error('Cameras load error:', error);
     showToast('Ошибка загрузки камер', 'error');
   }
+}
+
+function prefillLocalWebcamFields() {
+  const idEl = document.getElementById('cam-id');
+  const nameEl = document.getElementById('cam-name');
+  const rtspEl = document.getElementById('cam-rtsp');
+  const locationEl = document.getElementById('cam-location');
+  if (idEl && !idEl.value) idEl.value = LOCAL_GO2RTC_CAMERA.id;
+  if (nameEl && !nameEl.value) nameEl.value = LOCAL_GO2RTC_CAMERA.name;
+  if (rtspEl && !rtspEl.value) rtspEl.value = LOCAL_GO2RTC_CAMERA.rtspUrl;
+  if (locationEl && !locationEl.value) locationEl.value = LOCAL_GO2RTC_CAMERA.location;
 }
 
 function renderCamerasGrid(cameras) {
@@ -1698,6 +1802,11 @@ function renderCamerasGrid(cameras) {
           </svg>
         </div>
         <div class="flex items-center space-x-1">
+          <button class="btn-icon text-blue-600 hover:bg-blue-50 view-camera-btn" data-camera-id="${escapeHtml(cam.id)}" title="Смотреть">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.868v4.264a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </button>
           <button class="btn-icon text-slate-500 hover:bg-slate-100 edit-camera-btn" data-camera-id="${escapeHtml(cam.id)}" title="Редактировать">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -1715,9 +1824,16 @@ function renderCamerasGrid(cameras) {
       ${cam.rtspUrl ? `<p class="text-xs text-slate-400 truncate" title="${escapeHtml(cam.rtspUrl)}">${escapeHtml(cam.rtspUrl)}</p>` : ''}
       <p class="text-xs text-slate-400">${escapeHtml(cam.location || 'Расположение не указано')}</p>
       ${cam.deviceId ? `<p class="text-xs text-blue-500 mt-1">Устройство: ${escapeHtml(cam.deviceId)}</p>` : ''}
+      <button class="btn-primary w-full text-sm mt-4 view-camera-btn" data-camera-id="${escapeHtml(cam.id)}" ${cam.rtspUrl ? '' : 'disabled'}>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        <span>Смотреть</span>
+      </button>
     </div>
   `).join('');
 
+  grid.querySelectorAll('.view-camera-btn').forEach(btn => {
+    btn.addEventListener('click', () => openCameraLiveModal(btn.dataset.cameraId));
+  });
   grid.querySelectorAll('.edit-camera-btn').forEach(btn => {
     btn.addEventListener('click', () => openEditCameraModal(btn.dataset.cameraId));
   });
@@ -1731,6 +1847,75 @@ function deleteCamera(cameraId) {
   Api.cameraDelete(cameraId)
     .then(() => { showToast('Камера удалена', 'success'); loadCameras(); })
     .catch(err => showToast(err.message || 'Ошибка удаления', 'error'));
+}
+
+function resolveGo2rtcStreamSource(rtspUrl) {
+  const raw = String(rtspUrl || '').trim();
+  if (!raw) return null;
+
+  try {
+    const url = new URL(raw);
+    const lastPathPart = url.pathname.split('/').filter(Boolean).pop();
+    const host = url.hostname.toLowerCase();
+    const isGo2rtcHost = host === 'go2rtc'
+      || ((host === 'localhost'
+        || host === '127.0.0.1'
+        || host === window.location.hostname.toLowerCase()) && url.port === '8554');
+
+    if ((url.protocol === 'rtsp:' || url.protocol === 'rtsps:') && isGo2rtcHost && lastPathPart) {
+      return decodeURIComponent(lastPathPart);
+    }
+  } catch (_) {}
+
+  return raw;
+}
+
+function buildCameraPlayerUrl(cam) {
+  const src = resolveGo2rtcStreamSource(cam?.rtspUrl);
+  if (!src) return null;
+  const params = new URLSearchParams();
+  params.set('src', src);
+  params.set('mode', 'webrtc,mse');
+  return `/go2rtc/stream.html?${params.toString()}`;
+}
+
+function openCameraLiveModal(cameraId) {
+  const cam = camerasData.find(c => c.id === cameraId);
+  const playerUrl = buildCameraPlayerUrl(cam);
+  if (!cam || !playerUrl) {
+    showToast('У камеры не указан RTSP URL', 'warning');
+    return;
+  }
+
+  const modal = document.getElementById('camera-live-modal');
+  const frame = document.getElementById('camera-live-frame');
+  const title = document.getElementById('camera-live-title');
+  const subtitle = document.getElementById('camera-live-subtitle');
+  const openLink = document.getElementById('camera-live-open');
+  if (!modal || !frame) return;
+
+  if (title) title.textContent = cam.name || cam.id;
+  if (subtitle) subtitle.textContent = cam.rtspUrl || cam.id;
+  if (openLink) openLink.href = playerUrl;
+  frame.src = playerUrl;
+  modal.classList.remove('hidden');
+}
+
+function closeCameraLiveModal() {
+  const modal = document.getElementById('camera-live-modal');
+  const frame = document.getElementById('camera-live-frame');
+  if (frame) frame.src = 'about:blank';
+  modal?.classList.add('hidden');
+}
+
+function initCameraLiveModal() {
+  const modal = document.getElementById('camera-live-modal');
+  if (!modal) return;
+
+  document.getElementById('close-camera-live-modal')?.addEventListener('click', closeCameraLiveModal);
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) closeCameraLiveModal();
+  });
 }
 
 function populateCameraDeviceSelect(devices) {
@@ -1754,6 +1939,7 @@ function initAddCameraModal() {
   document.getElementById('add-camera-btn')?.addEventListener('click', () => {
     document.getElementById('add-camera-form')?.reset();
     populateCameraDeviceSelect(devicesData);
+    prefillLocalWebcamFields();
     modal.classList.remove('hidden');
   });
   document.getElementById('close-add-camera-modal')?.addEventListener('click', () => modal.classList.add('hidden'));
@@ -1863,13 +2049,13 @@ function initFaces() {
   document.getElementById('face-toggle-btn')?.addEventListener('click', async () => {
     const faceName = document.getElementById('face-name')?.value?.trim();
     const deviceInput = document.getElementById('face-device')?.value?.trim();
-    const device = deviceInput || 'default';
+    const device = deviceInput || null;
 
     if (!faceName || !/^[а-яА-ЯёЁa-zA-Z\s\-']+$/.test(faceName)) {
       showToast('Введите корректное имя (буквы, пробелы, дефисы, апострофы)', 'error');
       return;
     }
-    if (deviceInput && !/^[a-zA-Z0-9\-_\s]+$/.test(deviceInput)) {
+    if (deviceInput && !/^[A-Za-z0-9][A-Za-z0-9._:-]{1,99}$/.test(deviceInput)) {
       showToast('Некорректный ID устройства', 'error');
       return;
     }
@@ -2011,20 +2197,35 @@ function openGuestVisitQrModal(visit) {
   const host = document.getElementById('guest-visit-qr-host');
   const period = document.getElementById('guest-visit-qr-period');
   const status = document.getElementById('guest-visit-qr-status');
+  const reasonEl = document.getElementById('guest-visit-qr-reason');
+  const reasonRow = document.getElementById('guest-visit-qr-reason-row');
   const modal = document.getElementById('guest-visit-qr-modal');
   if (!image || !guest || !host || !period || !status || !modal) return;
 
   const guestName = resolveVisitGuestName(visit);
   const hostName = resolveVisitHostName(visit);
   const periodText = visit?.plannedFrom && visit?.plannedTo
-    ? `${formatDateTime(visit.plannedFrom)} - ${formatDateTime(visit.plannedTo)}`
+    ? `${formatDateTime(visit.plannedFrom)} – ${formatDateTime(visit.plannedTo)}`
     : '—';
+  const statusText = localizeVisitStatus(visit?.status || 'PLANNED');
+  const statusColor = visitStatusBadgeClass(visit?.status);
 
   image.src = Api.guestVisitQrUrl(visit.id);
   guest.textContent = guestName;
   host.textContent = hostName;
   period.textContent = periodText;
-  status.textContent = localizeVisitStatus(visit?.status || 'PLANNED');
+  status.className = `badge ${statusColor}`;
+  status.textContent = statusText;
+
+  if (reasonEl && reasonRow) {
+    if (visit?.reason) {
+      reasonEl.textContent = visit.reason;
+      reasonRow.classList.remove('hidden');
+    } else {
+      reasonRow.classList.add('hidden');
+    }
+  }
+
   modal.classList.remove('hidden');
 }
 
@@ -2035,6 +2236,30 @@ function localizeVisitStatus(status) {
   if (normalized === 'FINISHED') return 'Завершен';
   if (normalized === 'CANCELLED') return 'Отменен';
   return status || '—';
+}
+
+function visitStatusBadgeClass(status) {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'PLANNED') return 'bg-amber-100 text-amber-700';
+  if (normalized === 'ACTIVE') return 'bg-emerald-100 text-emerald-700';
+  if (normalized === 'FINISHED') return 'bg-blue-100 text-blue-700';
+  if (normalized === 'CANCELLED') return 'bg-red-100 text-red-700';
+  return 'bg-slate-100 text-slate-700';
+}
+
+/**
+ * Если QR содержит полный URL вида http://host/api/public/guest-checkin?code=VISIT:123,
+ * возвращает только значение параметра code. Иначе — строку без изменений.
+ */
+function extractVisitCodeFromRaw(raw) {
+  if (!raw) return raw;
+  if (!raw.startsWith('http://') && !raw.startsWith('https://')) return raw;
+  try {
+    const url = new URL(raw);
+    const code = url.searchParams.get('code');
+    if (code) return code;
+  } catch (_) { /* не URL — вернём как есть */ }
+  return raw;
 }
 
 function getVisitGuestId(visit) {
@@ -3638,6 +3863,7 @@ function init() {
   initEditDeviceModal();
   initAddCameraModal();
   initEditCameraModal();
+  initCameraLiveModal();
   initAddPositionModal();
   initEditPositionModal();
   initFieldHints();
@@ -3663,6 +3889,17 @@ function init() {
   loadGuests();
   loadPositions();
   loadProfile();
+
+  // Бейджи непрочитанных уведомлений и очереди согласования
+  refreshRequestBadges();
+
+  // Фоновый опрос: тост, когда появляется новое уведомление вне раздела заявок
+  startNotificationWatcher();
+
+  // Импорт сотрудников — только администратору, кнопка в разделе персонала
+  Api.getCurrentUser()
+    .then(user => initPersonnelImport(user))
+    .catch(() => initPersonnelImport(null));
 
   // Ensure modals are hidden
   ['loading-overlay', 'add-personnel-modal', 'add-device-modal', 'add-guest-modal',

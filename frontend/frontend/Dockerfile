@@ -23,9 +23,13 @@ RUN npm run build
 
 FROM nginx:alpine AS prod
 WORKDIR /usr/share/nginx/html
+RUN apk add --no-cache openssl
 COPY --from=build /frontend/dist/assets/styles.css ./styles.css
 COPY --from=build /frontend/src/index.html ./index.html
 COPY --from=build /frontend/src/login.html ./login.html
 COPY --from=build /frontend/src/js ./js
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+EXPOSE 80 443
+ENTRYPOINT ["/docker-entrypoint.sh"]

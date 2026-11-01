@@ -27,12 +27,21 @@ public class EventMetaConverter implements AttributeConverter<EventMeta, String>
 
     @Override
     public EventMeta convertToEntityAttribute(String dbData) {
-        if (dbData == null || dbData.isBlank()) {
+        if (dbData == null || dbData.isBlank() || "null".equalsIgnoreCase(dbData.trim())) {
             return new EventMeta();
         }
         try {
             return objectMapper.readValue(dbData, EventMeta.class);
         } catch (JsonProcessingException e) {
+            try {
+                String unquotedJson = objectMapper.readValue(dbData, String.class);
+                if (unquotedJson == null || unquotedJson.isBlank()) {
+                    return new EventMeta();
+                }
+                return objectMapper.readValue(unquotedJson, EventMeta.class);
+            } catch (JsonProcessingException ignored) {
+                // Fall through to the original error with the domain-specific message.
+            }
             throw new IllegalArgumentException("Ошибка десериализации JSON в EventMeta", e);
         }
     }

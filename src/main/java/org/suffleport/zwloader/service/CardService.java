@@ -32,12 +32,17 @@ public class CardService {
         String normalizedUid = ValidationRules.normalizeCardUid(uid);
         Objects.requireNonNull(personId, "нужен personId");
 
-        if (cardRepository.findByUid(normalizedUid) != null) {
+        Personnel person = getActivePersonOrThrow(personId);
+
+        Card existing = cardRepository.findByUid(normalizedUid);
+        if (existing != null) {
+            if (existing.getPerson() != null && existing.getPerson().isArchived()) {
+                existing.setPerson(person);
+                existing.setActive(true);
+                return cardRepository.save(existing);
+            }
             throw new IllegalStateException("Карта с таким UID уже существует: " + normalizedUid);
         }
-
-        Personnel person = personnelRepository.findById(personId)
-                .orElseThrow(() -> new NoSuchElementException("Сотрудник не найден: " + personId));
 
         Card card = new Card();
         card.setUid(normalizedUid);
@@ -86,8 +91,7 @@ public class CardService {
         Objects.requireNonNull(newPersonId, "нужен newPersonId");
 
         Card card = getByUidOrThrow(normalizedUid);
-        Personnel newPerson = personnelRepository.findById(newPersonId)
-                .orElseThrow(() -> new NoSuchElementException("Сотрудник не найден: " + newPersonId));
+        Personnel newPerson = getActivePersonOrThrow(newPersonId);
         card.setPerson(newPerson);
         return cardRepository.save(card);
     }
@@ -167,9 +171,9 @@ public class CardService {
         if (normalizedFullName == null) {
             return new RegisterResult("needs_assignment", null);
         }
-        List<Personnel> matches = personnelRepository.findByFullName(normalizedFullName);
+        List<Personnel> matches = personnelRepository.findByFullNameAndArchivedAtIsNull(normalizedFullName);
         if (matches.isEmpty()) {
-            matches = personnelRepository.findByFullNameIgnoreCase(normalizedFullName);
+            matches = personnelRepository.findByFullNameIgnoreCaseAndArchivedAtIsNull(normalizedFullName);
         }
         if (matches.isEmpty()) {
             String normalizedKey = normalizeFullNameKey(normalizedFullName);
@@ -188,10 +192,11 @@ public class CardService {
         Personnel person = matches.get(0);
         Card existing = cardRepository.findByUid(normalizedUid);
         if (existing != null) {
-            if (existing.getPerson().getId().equals(person.getId())) {
+            if (existing.getPerson() != null && existing.getPerson().getId().equals(person.getId())) {
                 return new RegisterResult("already_assigned", existing.getPerson().getFullName());
             }
             existing.setPerson(person);
+            existing.setActive(true);
             cardRepository.save(existing);
             return new RegisterResult("auto_assigned", person.getFullName());
         }
@@ -201,6 +206,15 @@ public class CardService {
         c.setActive(true);
         cardRepository.save(c);
         return new RegisterResult("auto_assigned", person.getFullName());
+    }
+
+    private Personnel getActivePersonOrThrow(UUID personId) {
+        Personnel person = personnelRepository.findById(personId)
+                .orElseThrow(() -> new NoSuchElementException("Сотрудник не найден: " + personId));
+        if (person.isArchived()) {
+            throw new IllegalStateException("Сотрудник уволен и находится в архиве");
+        }
+        return person;
     }
 
     private String normalizeFullNameKey(String value) {

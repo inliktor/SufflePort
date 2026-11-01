@@ -117,6 +117,7 @@ public class CreateDatabase {
                 position_id        UUID REFERENCES positions(position_id),
                 phone              TEXT,
                 compreface_subject TEXT,
+                archived_at        TIMESTAMPTZ,
                 created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
             )
         """.formatted(uuidDefaultExpr()));

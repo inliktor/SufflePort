@@ -1,5 +1,6 @@
 package org.suffleport.zwloader.web;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -76,6 +77,7 @@ public class SecurityIntegrationController {
 
         @Size(max = 100, message = "ID устройства не может быть длиннее 100 символов")
         @JsonProperty("device_id")
+        @JsonAlias({"deviceId", "device"})
         private String deviceId;
     }
 
@@ -84,10 +86,12 @@ public class SecurityIntegrationController {
         @NotBlank(message = "Имя лица обязательно")
         @Size(max = 200, message = "Имя лица не может быть длиннее 200 символов")
         @JsonProperty("face_name")
+        @JsonAlias({"faceName", "face"})
         private String faceName;
 
         @Size(max = 100, message = "ID устройства не может быть длиннее 100 символов")
         @JsonProperty("device_id")
+        @JsonAlias({"deviceId", "device"})
         private String deviceId;
     }
 }

@@ -66,6 +66,11 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           Гости
         </a>
+        <a href="#" class="nav-item-mobile" data-section="requests">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span class="flex-1">Заявки на посещение</span>
+          <span class="vr-nav-badge hidden" id="vr-nav-badge"></span>
+        </a>
         <a href="#" class="nav-item-mobile" data-section="positions">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
           Должности
@@ -78,14 +83,16 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
           Камеры
         </a>
-        <a href="#" class="nav-item-mobile" data-section="faces">
+        <span class="nav-item-mobile nav-item-disabled" data-section="faces" aria-disabled="true" title="Раздел в разработке">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          Распознавание лиц
-        </a>
-        <a href="#" class="nav-item-mobile" data-section="integrations">
+          <span class="flex-1">Распознавание лиц</span>
+          <span class="nav-soon-badge">Скоро</span>
+        </span>
+        <span class="nav-item-mobile nav-item-disabled" data-section="integrations" aria-disabled="true" title="Раздел в разработке">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-          Интеграции
-        </a>
+          <span class="flex-1">Интеграции</span>
+          <span class="nav-soon-badge">Скоро</span>
+        </span>
         <a href="#" class="nav-item-mobile" data-section="profile">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
           Профиль
@@ -142,6 +149,11 @@
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
         <span class="hidden xl:inline">Гости</span>
       </a>
+      <a href="#" class="nav-item" data-section="requests" title="Заявки на посещение">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="hidden xl:inline">Заявки</span>
+        <span class="vr-nav-badge hidden" id="vr-nav-badge-desktop"></span>
+      </a>
       <a href="#" class="nav-item" data-section="positions">
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
         <span class="hidden xl:inline">Должности</span>
@@ -157,17 +169,19 @@
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
         <span class="hidden xl:inline">Камеры</span>
       </a>
-      <a href="#" class="nav-item" data-section="faces">
+      <span class="nav-item nav-item-disabled" data-section="faces" aria-disabled="true" title="Раздел в разработке">
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span class="hidden xl:inline">Лица</span>
-      </a>
+        <span class="nav-soon-badge hidden 2xl:inline-flex">Скоро</span>
+      </span>
 
       <div class="h-5 w-px bg-slate-200 mx-1.5 flex-shrink-0"></div>
 
-      <a href="#" class="nav-item" data-section="integrations">
+      <span class="nav-item nav-item-disabled" data-section="integrations" aria-disabled="true" title="Раздел в разработке">
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
         <span class="hidden xl:inline">Интеграции</span>
-      </a>
+        <span class="nav-soon-badge hidden 2xl:inline-flex">Скоро</span>
+      </span>
       <a href="#" class="nav-item" data-section="profile">
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
         <span class="hidden xl:inline">Профиль</span>
@@ -176,6 +190,12 @@
 
     <!-- Right: status + user -->
     <div class="flex items-center space-x-3 ml-3 flex-shrink-0 pl-3 border-l border-slate-200">
+      <button id="vr-bell" type="button" class="vr-bell" aria-label="Уведомления по заявкам" title="Уведомления по заявкам">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0a3 3 0 11-6 0h6z"/>
+        </svg>
+        <span id="vr-bell-badge" class="vr-bell-badge hidden"></span>
+      </button>
       <div class="hidden lg:flex items-center px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold border border-emerald-200">
         <span class="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span>
         Активна
@@ -283,6 +303,10 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
               Добавить сотрудника
             </button>
+            <button id="personnel-import-btn" class="btn-secondary w-full sm:w-auto text-sm hidden">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v10m0 0l-3-3m3 3l3-3"/></svg>
+              Импорт из Excel
+            </button>
           </div>
           <div class="mb-4">
             <input type="text" id="search-personnel" placeholder="Поиск по имени, телефону..." class="input-field w-full" />
@@ -348,7 +372,7 @@
                   <th>Сотрудник / UID</th>
                   <th class="hidden md:table-cell">Источник</th>
                   <th>Направление</th>
-                  <th class="hidden lg:table-cell">Устройство</th>
+                  <th class="hidden lg:table-cell">Место / устройство</th>
                 </tr>
               </thead>
               <tbody id="events-table-body">
@@ -380,7 +404,8 @@
             </div>
             <div>
               <label class="label">Устройство</label>
-              <input id="manual-event-device" type="text" class="input-field" placeholder="dev-1" />
+              <input id="manual-event-device" type="text" class="input-field" placeholder="dev-1" list="device-options" autocomplete="off" />
+              <datalist id="device-options"></datalist>
             </div>
             <div>
               <label class="label">Направление</label>
@@ -472,6 +497,28 @@
           </div>
         </div>
       </section>
+
+      <!-- Модальное окно: импорт сотрудников из Excel -->
+      <div id="personnel-import-modal" class="modal-overlay-base hidden" role="dialog" aria-modal="true" aria-labelledby="personnel-import-title">
+        <div class="modal-content max-w-3xl mx-auto">
+          <div class="modal-header">
+            <h3 id="personnel-import-title" class="text-base font-semibold text-slate-900">Импорт сотрудников из Excel</h3>
+            <button type="button" class="p-2 hover:bg-slate-100 rounded-lg transition-colors" data-import-close aria-label="Закрыть окно">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="modal-body space-y-3">
+            <p class="text-xs text-slate-500">Колонки файла: Фамилия, Имя, Отчество, Дата рождения, Телефон, Должность. Сначала проверка без записи, затем применение.</p>
+            <div class="vr-toolbar">
+              <input id="personnel-import-file" type="file" accept=".xlsx" class="input-field" aria-label="Файл Excel для импорта" />
+              <button id="personnel-import-preview" type="button" class="vr-btn">Проверить файл</button>
+              <button id="personnel-import-apply" type="button" class="vr-btn vr-btn-primary">Применить</button>
+              <a id="personnel-import-template" class="vr-btn vr-btn-ghost" href="#" download>Скачать шаблон</a>
+            </div>
+            <div id="personnel-import-result" class="vr-list"></div>
+          </div>
+        </div>
+      </div>
 
       <!-- ===== GUESTS ===== -->
       <section id="guests" class="section-content hidden">
@@ -631,7 +678,8 @@
               <div>Гость: <span id="guest-visit-qr-guest" class="font-medium">—</span></div>
               <div>Хост: <span id="guest-visit-qr-host" class="font-medium">—</span></div>
               <div>Период: <span id="guest-visit-qr-period" class="font-medium">—</span></div>
-              <div>Статус: <span id="guest-visit-qr-status" class="font-medium">—</span></div>
+              <div>Статус: <span id="guest-visit-qr-status" class="badge bg-slate-100 text-slate-700">—</span></div>
+              <div id="guest-visit-qr-reason-row" class="hidden">Причина: <span id="guest-visit-qr-reason" class="font-medium">—</span></div>
             </div>
           </div>
           <div class="modal-footer flex gap-3">
@@ -639,6 +687,208 @@
           </div>
         </div>
       </div>
+
+      <!-- ===== VISIT REQUESTS ===== -->
+      <section id="requests" class="section-content hidden">
+        <div class="vr-hero">
+          <div class="vr-hero-bg" aria-hidden="true"></div>
+          <div class="relative flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+              <h3 class="vr-title">Заявки на посещение</h3>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button id="vr-new" type="button" class="vr-btn vr-btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                Новая заявка
+              </button>
+              <button id="vr-refresh" type="button" class="vr-btn" aria-label="Обновить данные заявок">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Обновить
+              </button>
+            </div>
+          </div>
+
+          <div class="vr-stats">
+            <div class="vr-stat">
+              <p class="vr-stat-label">Мои заявки</p>
+              <p class="vr-stat-value" id="vr-stat-mine">—</p>
+            </div>
+            <div class="vr-stat">
+              <p class="vr-stat-label">В очереди</p>
+              <p class="vr-stat-value" id="vr-stat-queue">—</p>
+            </div>
+            <div class="vr-stat">
+              <p class="vr-stat-label">Ожидаемые визиты</p>
+              <p class="vr-stat-value" id="vr-stat-expected">—</p>
+            </div>
+            <div class="vr-stat vr-stat-accent">
+              <p class="vr-stat-label">Непрочитанные</p>
+              <p class="vr-stat-value" id="vr-stat-unread">—</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="vr-tabs" role="tablist" aria-label="Разделы заявок">
+          <button type="button" class="vr-tab hidden" role="tab" aria-selected="false" data-vr-tab="all">Все заявки</button>
+          <button type="button" class="vr-tab active" role="tab" aria-selected="true" data-vr-tab="mine">Мои заявки</button>
+          <button type="button" class="vr-tab hidden" role="tab" aria-selected="false" data-vr-tab="queue">Согласование <span class="vr-tab-badge hidden" id="vr-queue-badge"></span></button>
+          <button type="button" class="vr-tab hidden" role="tab" aria-selected="false" data-vr-tab="expected">Ожидаемые</button>
+          <button type="button" class="vr-tab" role="tab" aria-selected="false" data-vr-tab="inbox">Уведомления <span class="vr-tab-badge hidden" id="vr-inbox-badge"></span></button>
+          <button type="button" class="vr-tab hidden" role="tab" aria-selected="false" data-vr-tab="audit">Аудит</button>
+        </div>
+
+        <div class="vr-panel" id="vr-panel-all" role="tabpanel" aria-label="Все заявки">
+          <div class="vr-toolbar">
+            <select id="vr-all-status" class="input-field" aria-label="Фильтр по статусу">
+              <option value="">Все статусы</option>
+              <option value="DRAFT">Черновик</option>
+              <option value="SUBMITTED">На согласовании</option>
+              <option value="APPROVED">Одобрена</option>
+              <option value="REJECTED">Отклонена</option>
+              <option value="CANCELLED">Отменена</option>
+            </select>
+          </div>
+          <div id="vr-all-list" class="vr-list" aria-live="polite"></div>
+        </div>
+
+        <div class="vr-panel active" id="vr-panel-mine" role="tabpanel" aria-label="Мои заявки">
+          <div class="vr-toolbar">
+            <input id="vr-search" type="search" class="input-field" placeholder="Поиск по посетителю или организации" aria-label="Поиск заявок" />
+            <select id="vr-status" class="input-field" aria-label="Фильтр по статусу заявки">
+              <option value="ALL">Все статусы</option>
+              <option value="DRAFT">Черновик</option>
+              <option value="SUBMITTED">На согласовании</option>
+              <option value="APPROVED">Одобрена</option>
+              <option value="REJECTED">Отклонена</option>
+              <option value="CANCELLED">Отменена</option>
+            </select>
+          </div>
+          <div id="vr-mine-list" class="vr-list" aria-live="polite"></div>
+        </div>
+
+        <div class="vr-panel" id="vr-panel-queue" role="tabpanel" aria-label="Очередь согласования">
+          <div id="vr-queue-list" class="vr-list" aria-live="polite"></div>
+        </div>
+
+        <div class="vr-panel" id="vr-panel-expected" role="tabpanel" aria-label="Ожидаемые посещения">
+          <div class="vr-toolbar">
+            <input id="vr-date" type="date" class="input-field" aria-label="Дата ожидаемых посещений" />
+          </div>
+          <div id="vr-expected-list" class="vr-list" aria-live="polite"></div>
+        </div>
+
+        <div class="vr-panel" id="vr-panel-inbox" role="tabpanel" aria-label="Уведомления">
+          <div class="vr-toolbar">
+            <button id="vr-read-all" type="button" class="vr-btn">Отметить всё прочитанным</button>
+          </div>
+          <div id="vr-inbox-list" class="vr-list" aria-live="polite"></div>
+        </div>
+
+        <div class="vr-panel" id="vr-panel-audit" role="tabpanel" aria-label="Журнал аудита">
+          <div class="vr-toolbar">
+            <select id="vr-audit-type" class="input-field" aria-label="Тип объекта в журнале">
+              <option value="">Все объекты</option>
+              <option value="VisitRequest">Заявки</option>
+              <option value="Personnel">Сотрудники</option>
+            </select>
+            <input id="vr-audit-actor" class="input-field" placeholder="Автор (email)" aria-label="Фильтр по автору изменения" />
+          </div>
+          <div id="vr-audit-list" class="vr-list" aria-live="polite"></div>
+        </div>
+
+        <!-- Модальное окно: новая заявка -->
+        <div id="vr-create-modal" class="modal-overlay-base hidden" role="dialog" aria-modal="true" aria-labelledby="vr-create-title">
+          <div class="modal-content max-w-2xl mx-auto">
+            <div class="modal-header">
+              <h3 id="vr-create-title" class="text-base font-semibold text-slate-900">Новая заявка на посещение</h3>
+              <button type="button" class="p-2 hover:bg-slate-100 rounded-lg transition-colors" data-vr-close="vr-create-modal" aria-label="Закрыть окно">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <form id="vr-create-form" class="modal-body space-y-4">
+              <div>
+                <label for="vr-form-host" class="block text-xs font-medium text-slate-500 mb-1">К кому идёт посетитель</label>
+                <select id="vr-form-host" class="input-field w-full" required></select>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label for="vr-form-lastName" class="block text-xs font-medium text-slate-500 mb-1">Фамилия</label>
+                  <input id="vr-form-lastName" class="input-field w-full" maxlength="100" required />
+                </div>
+                <div>
+                  <label for="vr-form-firstName" class="block text-xs font-medium text-slate-500 mb-1">Имя</label>
+                  <input id="vr-form-firstName" class="input-field w-full" maxlength="100" required />
+                </div>
+                <div>
+                  <label for="vr-form-middleName" class="block text-xs font-medium text-slate-500 mb-1">Отчество</label>
+                  <input id="vr-form-middleName" class="input-field w-full" maxlength="100" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="vr-form-organization" class="block text-xs font-medium text-slate-500 mb-1">Организация</label>
+                  <input id="vr-form-organization" class="input-field w-full" maxlength="200" />
+                </div>
+                <div>
+                  <label for="vr-form-phone" class="block text-xs font-medium text-slate-500 mb-1">Телефон</label>
+                  <input id="vr-form-phone" class="input-field w-full" maxlength="32" placeholder="+79001234567" />
+                </div>
+              </div>
+              <div>
+                <label for="vr-form-purpose" class="block text-xs font-medium text-slate-500 mb-1">Цель посещения</label>
+                <input id="vr-form-purpose" class="input-field w-full" maxlength="300" />
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label for="vr-form-from" class="block text-xs font-medium text-slate-500 mb-1">Начало</label>
+                  <input id="vr-form-from" type="datetime-local" class="input-field w-full" required />
+                </div>
+                <div>
+                  <label for="vr-form-to" class="block text-xs font-medium text-slate-500 mb-1">Окончание</label>
+                  <input id="vr-form-to" type="datetime-local" class="input-field w-full" required />
+                </div>
+              </div>
+              <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" class="btn-secondary" data-vr-close="vr-create-modal">Отмена</button>
+                <button type="submit" class="vr-btn vr-btn-primary">Сохранить черновик</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Модальное окно: карточка заявки и история -->
+        <div id="vr-details-modal" class="modal-overlay-base hidden" role="dialog" aria-modal="true" aria-labelledby="vr-details-title">
+          <div class="modal-content max-w-xl mx-auto">
+            <div class="modal-header">
+              <h3 id="vr-details-title" class="text-base font-semibold text-slate-900">Заявка</h3>
+              <button type="button" class="p-2 hover:bg-slate-100 rounded-lg transition-colors" data-vr-close="vr-details-modal" aria-label="Закрыть окно">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="modal-body" id="vr-details-body"></div>
+          </div>
+        </div>
+
+        <!-- Модальное окно: причина отказа -->
+        <div id="vr-reject-modal" class="modal-overlay-base hidden" role="dialog" aria-modal="true" aria-labelledby="vr-reject-title">
+          <div class="modal-content max-w-md mx-auto">
+            <div class="modal-header">
+              <h3 id="vr-reject-title" class="text-base font-semibold text-slate-900">Причина отказа</h3>
+              <button type="button" class="p-2 hover:bg-slate-100 rounded-lg transition-colors" data-vr-close="vr-reject-modal" aria-label="Закрыть окно">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="modal-body space-y-3">
+              <label for="vr-reject-comment" class="block text-xs font-medium text-slate-500">Комментарий видит автор заявки</label>
+              <textarea id="vr-reject-comment" class="input-field w-full" rows="4" maxlength="1000" placeholder="Например: нет свободного переговорного зала"></textarea>
+              <div class="flex items-center justify-end gap-2">
+                <button type="button" class="btn-secondary" data-vr-close="vr-reject-modal">Отмена</button>
+                <button type="button" id="vr-reject-confirm" class="vr-btn vr-btn-danger">Отклонить заявку</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- ===== POSITIONS ===== -->
       <section id="positions" class="section-content hidden">
@@ -1357,7 +1607,7 @@
           </div>
           <div>
             <label class="label">RTSP URL</label>
-            <input id="cam-rtsp" type="text" class="input-field" placeholder="rtsp://192.168.1.100:554/stream1" autocomplete="off" />
+            <input id="cam-rtsp" type="text" class="input-field" placeholder="rtsp://go2rtc:8554/webcam" autocomplete="off" />
           </div>
           <div>
             <label class="label">Расположение</label>
@@ -1534,7 +1784,7 @@
           </div>
           <div>
             <label class="label">RTSP URL</label>
-            <input id="edit-cam-rtsp" type="text" class="input-field" placeholder="rtsp://192.168.1.100:554/stream1" />
+            <input id="edit-cam-rtsp" type="text" class="input-field" placeholder="rtsp://go2rtc:8554/webcam" />
           </div>
           <div>
             <label class="label">Расположение</label>
@@ -1552,6 +1802,31 @@
           <button type="submit" class="btn-primary flex-1">Сохранить</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: CAMERA LIVE VIEW ===== -->
+  <div id="camera-live-modal" class="modal-overlay-base hidden">
+    <div class="modal-content max-w-5xl mx-auto w-full">
+      <div class="modal-header flex justify-between items-center">
+        <div class="min-w-0">
+          <h3 id="camera-live-title" class="text-lg font-bold text-slate-900 truncate">Прямой эфир</h3>
+          <p id="camera-live-subtitle" class="text-xs text-slate-400 mt-0.5 truncate"></p>
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="camera-live-open" class="p-2 hover:bg-slate-100 rounded-lg transition-colors" href="#" target="_blank" rel="noopener" title="Открыть отдельно">
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+          <button id="close-camera-live-modal" class="p-2 hover:bg-slate-100 rounded-lg transition-colors" title="Закрыть">
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="bg-slate-950 rounded-xl overflow-hidden border border-slate-800 aspect-video">
+          <iframe id="camera-live-frame" class="w-full h-full border-0 bg-black" title="Прямой эфир камеры" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="same-origin"></iframe>
+        </div>
+      </div>
     </div>
   </div>
 
