@@ -16,6 +16,10 @@ import org.suffleport.zwloader.validation.ValidationRules;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -25,6 +29,11 @@ import java.util.UUID;
 public class GuestVisitService {
 
     private static final ZoneId APP_ZONE = ZoneId.of("Europe/Saratov");
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    /** Допуск до начала визита (гость может прийти не раньше, чем за N часов) */
+    private static final int CHECKIN_AHEAD_HOURS = 2;
+    /** Допуск после окончания визита (принять гостя можно не позже N минут после plannedTo) */
+    private static final int CHECKIN_OVERDUE_MINUTES = 30;
 
     private final GuestVisitRepository guestVisitRepository;
     private final GuestRepository guestRepository;
@@ -50,7 +59,13 @@ public class GuestVisitService {
 
     @Transactional(readOnly = true)
     public GuestVisit getOrThrow(Long id) {
-        return guestVisitRepository.findById(id)
+        return guestVisitRepository.findByIdWithGuestAndHost(id)
+                .orElseThrow(() -> new NoSuchElementException("Визит не найден: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public GuestVisit getWithGuestAndHost(Long id) {
+        return guestVisitRepository.findByIdWithGuestAndHost(id)
                 .orElseThrow(() -> new NoSuchElementException("Визит не найден: " + id));
     }
 
@@ -129,7 +144,8 @@ public class GuestVisitService {
         if (code == null || code.isBlank()) {
             throw new IllegalArgumentException("Код визита обязателен");
         }
-        String normalized = code.trim();
+        // Если QR содержит полный URL (http/https), извлекаем параметр code=
+        String normalized = extractCodeFromUrlIfNeeded(code.trim());
         if (!normalized.toUpperCase().startsWith("VISIT:")) {
             throw new IllegalArgumentException("Некорректный формат кода визита");
         }
@@ -141,13 +157,33 @@ public class GuestVisitService {
             throw new IllegalArgumentException("Некорректный идентификатор визита в коде");
         }
         GuestVisit visit = getOrThrow(visitId);
+
+        OffsetDateTime now = OffsetDateTime.now(APP_ZONE);
+
+        // Первое сканирование: PLANNED → ACTIVE (гость вошёл)
+        if ("PLANNED".equalsIgnoreCase(visit.getStatus())) {
+            if (visit.getPlannedFrom() != null && visit.getPlannedFrom().isAfter(now.plusHours(CHECKIN_AHEAD_HOURS))) {
+                String from = visit.getPlannedFrom().atZoneSameInstant(APP_ZONE).toOffsetDateTime().format(DATE_FMT);
+                throw new IllegalStateException("Визит запланирован только с " + from + ". Активация пока недоступна.");
+            }
+            if (visit.getPlannedTo() != null && visit.getPlannedTo().isBefore(now.minusMinutes(CHECKIN_OVERDUE_MINUTES))) {
+                throw new IllegalStateException("Визит недоступен — гость не явился в отведённое время.");
+            }
+            return startVisit(visitId);
+        }
+
+        // Второе сканирование: ACTIVE → FINISHED (гость вышел)
         if ("ACTIVE".equalsIgnoreCase(visit.getStatus())) {
-            return visit;
+            return finishVisit(visitId);
         }
-        if ("FINISHED".equalsIgnoreCase(visit.getStatus()) || "CANCELLED".equalsIgnoreCase(visit.getStatus()) || "DENIED".equalsIgnoreCase(visit.getStatus())) {
-            throw new IllegalStateException("Нельзя активировать визит в статусе " + visit.getStatus());
+
+        if ("FINISHED".equalsIgnoreCase(visit.getStatus())) {
+            throw new IllegalStateException("Гость уже покинул здание.");
         }
-        return startVisit(visitId);
+        if ("CANCELLED".equalsIgnoreCase(visit.getStatus())) {
+            throw new IllegalStateException("Визит отменён.");
+        }
+        throw new IllegalStateException("Визит недоступен (статус: " + visit.getStatus() + ").");
     }
 
     @Transactional(readOnly = true)
@@ -155,6 +191,32 @@ public class GuestVisitService {
         getOrThrow(id);
         return "VISIT:" + id;
     }
+
+    /**
+     * Если переданная строка является полным URL (из QR-кода, отсканированного телефоном),
+     * извлекает значение query-параметра {@code code}. Иначе возвращает строку без изменений.
+     * Пример: http://host/api/public/guest-checkin?code=VISIT:123 → VISIT:123
+     */
+    private String extractCodeFromUrlIfNeeded(String raw) {
+        if (!raw.startsWith("http://") && !raw.startsWith("https://")) {
+            return raw;
+        }
+        try {
+            URI uri = URI.create(raw);
+            String query = uri.getRawQuery();
+            if (query == null) return raw;
+            for (String param : query.split("&")) {
+                if (param.startsWith("code=")) {
+                    return URLDecoder.decode(param.substring(5), StandardCharsets.UTF_8);
+                }
+            }
+        } catch (Exception ignored) {
+            // URL не распарсился — возвращаем как есть, дальше упадёт с понятной ошибкой
+        }
+        return raw;
+    }
+
+
 
     @Transactional(readOnly = true)
     public List<GuestVisit> listByGuest(UUID guestId) { return guestVisitRepository.findByGuest_Id(guestId); }

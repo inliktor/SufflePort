@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,9 @@ public class GuestVisitController {
 
     private final GuestVisitService guestVisitService;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     @GetMapping
     public Object listAll(@RequestParam(name = "page", required = false) Integer page,
                           @RequestParam(name = "size", required = false) Integer size,
@@ -44,7 +48,7 @@ public class GuestVisitController {
     }
 
     @GetMapping("/{id}")
-    public GuestVisit get(@PathVariable Long id) { return guestVisitService.getOrThrow(id); }
+    public GuestVisit get(@PathVariable Long id) { return guestVisitService.getWithGuestAndHost(id); }
 
     @GetMapping("/by-guest/{guestId}")
     public List<GuestVisit> byGuest(@PathVariable UUID guestId) { return guestVisitService.listByGuest(guestId); }
@@ -96,7 +100,8 @@ public class GuestVisitController {
     @GetMapping(value = "/{id}/qr", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> qrByVisit(@PathVariable Long id) {
         String code = guestVisitService.buildVisitCode(id);
-        byte[] png = generateQrPng(code, 320);
+        String checkinUrl = baseUrl + "/api/public/guest-checkin?code=" + code;
+        byte[] png = generateQrPng(checkinUrl, 320);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .contentType(MediaType.IMAGE_PNG)
@@ -109,7 +114,8 @@ public class GuestVisitController {
         return Map.of(
                 "status", "ok",
                 "visitId", visit.getId(),
-                "visitStatus", visit.getStatus()
+                "visitStatus", visit.getStatus(),
+                "visit", visit
         );
     }
 

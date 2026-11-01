@@ -114,6 +114,22 @@ public class HaGuestQrService {
         if (normalized == null) {
             return null;
         }
+        // Если текст является полным URL (из QR), извлекаем параметр code=
+        if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+            try {
+                java.net.URI uri = java.net.URI.create(normalized);
+                String query = uri.getRawQuery();
+                if (query != null) {
+                    for (String param : query.split("&")) {
+                        if (param.startsWith("code=")) {
+                            String codeVal = java.net.URLDecoder.decode(
+                                    param.substring(5), java.nio.charset.StandardCharsets.UTF_8);
+                            return extractVisitCodeFromText(codeVal);
+                        }
+                    }
+                }
+            } catch (Exception ignored) { /* продолжаем обычную проверку */ }
+        }
         if (normalized.regionMatches(true, 0, "VISIT:", 0, "VISIT:".length())) {
             return "VISIT:" + normalized.substring("VISIT:".length()).trim();
         }
