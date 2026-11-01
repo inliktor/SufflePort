@@ -11,7 +11,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.suffleport.zwloader.domain.Role;
 import org.suffleport.zwloader.domain.User;
+import org.suffleport.zwloader.security.RoleAuthorityMapper;
 import org.suffleport.zwloader.dto.AuthResponse;
 import org.suffleport.zwloader.dto.LoginRequest;
 import org.suffleport.zwloader.dto.RegisterRequest;
@@ -29,11 +29,12 @@ import org.suffleport.zwloader.validation.ValidationRules;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://192.168.88.247:7080", allowCredentials = "true")
+@Slf4j
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -80,7 +81,7 @@ public class AuthController {
             }
 
             
-            Integer userRoleId = user.getRole() != null ? user.getRole().getRoleId() : 0;
+            Integer userRoleId = resolveRoleId(user);
             boolean isAdminUser = userRoleId == 1;
 
             
@@ -90,8 +91,9 @@ public class AuthController {
             session.setAttribute("isAdmin", isAdminUser);
 
 
-            var authorities = List.of(new SimpleGrantedAuthority(
-                    isAdminUser ? "ROLE_ADMIN" : "ROLE_USER"));
+            // Права собираются из роли в БД, а не из флага isAdmin:
+            // так согласующий и охрана получают свои authority.
+            var authorities = RoleAuthorityMapper.authoritiesOf(user.getRole());
             var springAuth = new UsernamePasswordAuthenticationToken(
                     user.getEmail(), null, authorities);
             SecurityContext springContext = SecurityContextHolder.createEmptyContext();
@@ -109,7 +111,7 @@ public class AuthController {
                     user.getEmail().split("@")[0], 
                     user.getEmail(),
                     userRoleId,
-                    user.getRole().getName(),
+                    resolveRoleName(user),
                     isAdminUser,
                     user.getPersonId(),
                     user.getCreatedAt()
@@ -121,8 +123,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(e.getMessage());
         } catch (Exception e) {
+            log.warn("Login failed because of unexpected error", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Ошибка входа: " + e.getMessage());
+                    .body("Ошибка входа");
         }
     }
 
@@ -147,8 +150,8 @@ public class AuthController {
                     session.getId(),
                     user.getEmail().split("@")[0],
                     user.getEmail(),
-                    roleId,
-                    user.getRole().getName(),
+                    roleId != null ? roleId : resolveRoleId(user),
+                    resolveRoleName(user),
                     isAdmin != null && isAdmin,
                     user.getPersonId(),
                     user.getCreatedAt()
@@ -157,8 +160,9 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            log.warn("Current user lookup failed", e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Ошибка авторизации: " + e.getMessage());
+                    .body("Ошибка авторизации");
         }
     }
 
@@ -167,5 +171,17 @@ public class AuthController {
         SecurityContextHolder.clearContext();
         session.invalidate();
         return ResponseEntity.ok(Map.of("message", "Выход выполнен"));
+    }
+
+    private Integer resolveRoleId(User user) {
+        return user.getRole() != null && user.getRole().getRoleId() != null
+                ? user.getRole().getRoleId()
+                : 0;
+    }
+
+    private String resolveRoleName(User user) {
+        return user.getRole() != null && user.getRole().getName() != null
+                ? user.getRole().getName()
+                : "USER";
     }
 }
