@@ -20,10 +20,12 @@ CREATE TABLE IF NOT EXISTS personnel (
     position_id        UUID REFERENCES positions(position_id),
     phone              TEXT,
     compreface_subject TEXT,
+    archived_at        TIMESTAMPTZ,
     created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_personnel_name_lower ON personnel (lower(last_name), lower(first_name));
 CREATE INDEX IF NOT EXISTS idx_personnel_full_name_lower ON personnel (lower(full_name));
+CREATE INDEX IF NOT EXISTS idx_personnel_archived_at ON personnel(archived_at);
 
 -- cards
 CREATE TABLE IF NOT EXISTS cards (

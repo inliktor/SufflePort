@@ -53,6 +53,9 @@ public class Personnel {
     @Column(name = "photo_base64", columnDefinition = "TEXT")
     private String photoBase64; // фото сотрудника в формате base64
 
+    @Column(name = "archived_at")
+    private OffsetDateTime archivedAt;
+
     @Column(name = "created_at", updatable = false, insertable = false)
     private OffsetDateTime createdAt; // когда запись создана (ставит БД через DEFAULT now())
 
@@ -100,6 +103,11 @@ public class Personnel {
         if (firstName != null) sb.append(firstName).append(" ");
         if (middleName != null) sb.append(middleName);
         return sb.toString().trim();
+    }
+
+    @Transient
+    public boolean isArchived() {
+        return archivedAt != null;
     }
 
 }

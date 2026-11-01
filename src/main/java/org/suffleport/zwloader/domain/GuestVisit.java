@@ -1,11 +1,20 @@
 package org.suffleport.zwloader.domain;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import java.time.OffsetDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.time.OffsetDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -45,6 +54,13 @@ public class GuestVisit {
 
     @Column(name = "finished_at")
     private OffsetDateTime finishedAt;
+
+    /**
+     * Идентификатор заявки, из которой создан визит.
+     * Для визитов, оформленных вручную, остаётся пустым.
+     */
+    @Column(name = "request_id")
+    private Long requestId;
 
     @Column(name = "created_at", updatable = false, insertable = false)
     private OffsetDateTime createdAt;

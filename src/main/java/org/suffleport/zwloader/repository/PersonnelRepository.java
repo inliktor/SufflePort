@@ -27,6 +27,10 @@ public interface PersonnelRepository extends JpaRepository<Personnel, UUID> {
 
     List<Personnel> findByFullNameIgnoreCase(String fullName);
 
+    List<Personnel> findByFullNameAndArchivedAtIsNull(String fullName);
+
+    List<Personnel> findByFullNameIgnoreCaseAndArchivedAtIsNull(String fullName);
+
     // По связанной сущности (Position) — если есть @ManyToOne:
     // (Spring сам строит join)
     List<Personnel> findByPosition_Name(String positionName);
@@ -49,13 +53,22 @@ public interface PersonnelRepository extends JpaRepository<Personnel, UUID> {
         @EntityGraph(attributePaths = {"position"})
         @Query("""
             select p from Personnel p
-            where lower(coalesce(p.fullName, '')) like lower(concat('%', :query, '%'))
-               or lower(coalesce(p.lastName, '')) like lower(concat('%', :query, '%'))
-               or lower(coalesce(p.firstName, '')) like lower(concat('%', :query, '%'))
-               or lower(coalesce(p.middleName, '')) like lower(concat('%', :query, '%'))
-               or lower(coalesce(p.phone, '')) like lower(concat('%', :query, '%'))
+                        where p.archivedAt is null
+                            and (
+                                     lower(coalesce(p.fullName, '')) like lower(concat('%', :query, '%'))
+                                or lower(coalesce(p.lastName, '')) like lower(concat('%', :query, '%'))
+                                or lower(coalesce(p.firstName, '')) like lower(concat('%', :query, '%'))
+                                or lower(coalesce(p.middleName, '')) like lower(concat('%', :query, '%'))
+                                or lower(coalesce(p.phone, '')) like lower(concat('%', :query, '%'))
+                            )
             """)
     Page<Personnel> search(@Param("query") String query, Pageable pageable);
+
+        @EntityGraph(attributePaths = {"position"})
+        Page<Personnel> findByArchivedAtIsNull(Pageable pageable);
+
+        @EntityGraph(attributePaths = {"position"})
+        List<Personnel> findByArchivedAtIsNull();
 
         @Override
         @EntityGraph(attributePaths = {"position"})
